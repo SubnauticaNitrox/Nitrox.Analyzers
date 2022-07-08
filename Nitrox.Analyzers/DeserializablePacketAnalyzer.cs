@@ -16,8 +16,14 @@ public sealed class DeserializablePacketAnalyzer : DiagnosticAnalyzer
     private const string ANALYZER_ID = nameof(DeserializablePacketAnalyzer);
     private const string PACKET_CLASS_NAME = "Packet";
 
+    /// <summary>
+    ///     Gets the list of rules of supported diagnostics.
+    /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
 
+    /// <summary>
+    ///     Initializes the analyzer by registering on symbol occurrence in the targeted code.
+    /// </summary>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

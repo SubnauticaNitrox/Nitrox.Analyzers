@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitrox.Analyzers", "Nitrox.Analyzers\Nitrox.Analyzers.csproj", "{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{43B9F606-85D8-460C-AF54-7BDA11B87177}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
