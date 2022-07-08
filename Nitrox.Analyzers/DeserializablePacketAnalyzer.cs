@@ -10,16 +10,16 @@ namespace Nitrox.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DeserializablePacketAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly DiagnosticDescriptor rule = new(ANALYZER_ID, "Packet must be deserializable", "Packet class {0} does not have a public, parameterless constructor",
+    private static readonly DiagnosticDescriptor Rule = new(AnalyzerId, "Packet must be deserializable", "Packet class {0} does not have a public, parameterless constructor",
         "Usage", DiagnosticSeverity.Error, true, "Tests that Nitrox packet types have valid deserialization constructor that has no parameters.");
 
-    private const string ANALYZER_ID = nameof(DeserializablePacketAnalyzer);
-    private const string PACKET_CLASS_NAME = "Packet";
+    private const string AnalyzerId = nameof(DeserializablePacketAnalyzer);
+    private const string PacketClassName = "Packet";
 
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
     /// </summary>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     /// <summary>
     ///     Initializes the analyzer by registering on symbol occurrence in the targeted code.
@@ -35,7 +35,7 @@ public sealed class DeserializablePacketAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeNamedTypeSymbol(SymbolAnalysisContext context)
     {
         INamedTypeSymbol typeSymbol = (INamedTypeSymbol)context.Symbol;
-        if (!string.Equals(PACKET_CLASS_NAME, typeSymbol.BaseType?.Name, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(PacketClassName, typeSymbol.BaseType?.Name, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -44,6 +44,6 @@ public sealed class DeserializablePacketAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(rule, typeSymbol.Locations[0], typeSymbol.Name));
+        context.ReportDiagnostic(Diagnostic.Create(Rule, typeSymbol.Locations[0], typeSymbol.Name));
     }
 }

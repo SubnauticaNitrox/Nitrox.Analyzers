@@ -6,6 +6,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionF
 	ProjectSection(SolutionItems) = preProject
 		LICENSE = LICENSE
 		README.md = README.md
+		tools\install.ps1 = tools\install.ps1
+		tools\uninstall.ps1 = tools\uninstall.ps1
 	EndProjectSection
 EndProject
 Global
@@ -18,5 +20,7 @@ Global
 		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5E8D18D-B657-45EB-83B4-4A4091DD7AC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal
