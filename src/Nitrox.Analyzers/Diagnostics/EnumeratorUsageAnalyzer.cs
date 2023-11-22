@@ -41,8 +41,7 @@ public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        IMethodSymbol methodSymbol = context.SemanticModel.GetSymbolInfo(expression, context.CancellationToken).Symbol as IMethodSymbol;
-        if (methodSymbol == null)
+        if (context.SemanticModel.GetSymbolInfo(expression, context.CancellationToken).Symbol is not IMethodSymbol methodSymbol)
         {
             return;
         }

@@ -42,14 +42,14 @@ public static class SyntaxExtensions
         return false;
     }
 
-    public static string GetNamespaceName(this TypeDeclarationSyntax type) => type.Ancestors()
-                                                                                      .Select(n => n switch
-                                                                                      {
-                                                                                          FileScopedNamespaceDeclarationSyntax f => f.Name.ToString(),
-                                                                                          NamespaceDeclarationSyntax ns => ns.Name.ToString(),
-                                                                                          _ => null
-                                                                                      })
-                                                                                      .First();
+    public static string? GetNamespaceName(this TypeDeclarationSyntax type) => type.Ancestors()
+                                                                                   .Select(n => n switch
+                                                                                   {
+                                                                                       FileScopedNamespaceDeclarationSyntax f => f.Name.ToString(),
+                                                                                       NamespaceDeclarationSyntax ns => ns.Name.ToString(),
+                                                                                       _ => null
+                                                                                   })
+                                                                                   .First();
 
     public static string GetReturnTypeName(this MemberDeclarationSyntax member) => member switch
     {
@@ -65,21 +65,17 @@ public static class SyntaxExtensions
         _ => ""
     };
 
-    public static T FindInParents<T>(this SyntaxNode node) where T : SyntaxNode
+    public static T? FindInParents<T>(this SyntaxNode node) where T : SyntaxNode
     {
-        if (node == null)
-        {
-            return null;
-        }
-        SyntaxNode cur = node.Parent;
-        while (cur != null && cur is not T)
+        SyntaxNode? cur = node.Parent;
+        while (cur is not null and not T)
         {
             cur = cur.Parent;
         }
-        return (T)cur;
+        return (T?)cur;
     }
 
-    public static string GetName(this SyntaxNode node) => node switch
+    public static string? GetName(this SyntaxNode node) => node switch
     {
         FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
         TypeDeclarationSyntax type => type.Identifier.ValueText,

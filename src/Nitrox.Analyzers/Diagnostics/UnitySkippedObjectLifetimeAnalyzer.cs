@@ -61,7 +61,7 @@ public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(compStartContext =>
         {
-            INamedTypeSymbol unityObjectTypeSymbol = compStartContext.Compilation.GetTypeByMetadataName("UnityEngine.Object");
+            INamedTypeSymbol? unityObjectTypeSymbol = compStartContext.Compilation.GetTypeByMetadataName("UnityEngine.Object");
             if (unityObjectTypeSymbol == null)
             {
                 return;
@@ -86,7 +86,7 @@ public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
             return;
         }
         // Is it on a UnityEngine.Object?
-        if (IsUnityObjectExpression(context, expression.Expression, unityObjectSymbol, out ITypeSymbol originSymbol))
+        if (IsUnityObjectExpression(context, expression.Expression, unityObjectSymbol, out ITypeSymbol? originSymbol))
         {
             context.ReportDiagnostic(Diagnostic.Create(isNullRule, constantPattern.GetLocation(), originSymbol!.Name));
         }
@@ -94,13 +94,10 @@ public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeConditionalAccessNode(SyntaxNodeAnalysisContext context, ITypeSymbol unityObjectSymbol)
     {
-        static bool IsFixedWithAliveOrNull(SyntaxNodeAnalysisContext context, ConditionalAccessExpressionSyntax expression)
-        {
-            return (context.SemanticModel.GetSymbolInfo(expression.Expression).Symbol as IMethodSymbol)?.Name == FIX_FUNCTION_NAME;
-        }
+        static bool IsFixedWithAliveOrNull(SyntaxNodeAnalysisContext context, ConditionalAccessExpressionSyntax expression) => context.SemanticModel.GetSymbolInfo(expression.Expression).Symbol is IMethodSymbol { Name: FIX_FUNCTION_NAME };
 
         ConditionalAccessExpressionSyntax expression = (ConditionalAccessExpressionSyntax)context.Node;
-        if (IsUnityObjectExpression(context, expression.Expression, unityObjectSymbol, out ITypeSymbol originSymbol) && !IsFixedWithAliveOrNull(context, expression))
+        if (IsUnityObjectExpression(context, expression.Expression, unityObjectSymbol, out ITypeSymbol? originSymbol) && !IsFixedWithAliveOrNull(context, expression))
         {
             context.ReportDiagnostic(Diagnostic.Create(conditionalAccessRule, context.Node.GetLocation(), originSymbol!.Name));
         }
@@ -109,15 +106,15 @@ public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
     private void AnalyzeCoalesceNode(SyntaxNodeAnalysisContext context, ITypeSymbol unityObjectSymbol)
     {
         BinaryExpressionSyntax expression = (BinaryExpressionSyntax)context.Node;
-        if (IsUnityObjectExpression(context, expression.Left, unityObjectSymbol, out ITypeSymbol originSymbol))
+        if (IsUnityObjectExpression(context, expression.Left, unityObjectSymbol, out ITypeSymbol? originSymbol))
         {
             context.ReportDiagnostic(Diagnostic.Create(nullCoalesceRule, context.Node.GetLocation(), originSymbol!.Name));
         }
     }
 
-    private bool IsUnityObjectExpression(SyntaxNodeAnalysisContext context, ExpressionSyntax possibleUnityAccessExpression, ITypeSymbol compareSymbol, out ITypeSymbol possibleUnitySymbol)
+    private bool IsUnityObjectExpression(SyntaxNodeAnalysisContext context, ExpressionSyntax possibleUnityAccessExpression, ITypeSymbol compareSymbol, out ITypeSymbol? possibleUnitySymbol)
     {
         possibleUnitySymbol = context.SemanticModel.GetTypeInfo(possibleUnityAccessExpression).Type;
-        return possibleUnitySymbol.IsType(compareSymbol);
+        return possibleUnitySymbol?.IsType(compareSymbol) ?? false;
     }
 }

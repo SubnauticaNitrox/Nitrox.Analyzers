@@ -40,7 +40,7 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
                 case InterpolatedStringExpressionSyntax:
                     return true;
                 case MemberAccessExpressionSyntax member:
-                    string memberType = context.SemanticModel.GetTypeInfo(member).ConvertedType?.Name;
+                    string? memberType = context.SemanticModel.GetTypeInfo(member).ConvertedType?.Name;
                     return memberType == "String";
                 case BinaryExpressionSyntax binary:
                     // If one side is string-ish then the other side will get implicitly casted to string.
@@ -50,18 +50,13 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static bool IsLeftMostNodeInConcat(SyntaxNode node)
+        static bool IsLeftMostNodeInConcat(SyntaxNode? node) => node switch
         {
-            switch (node)
-            {
-                case BinaryExpressionSyntax:
-                case InterpolatedStringContentSyntax:
-                    return false;
-                case ParenthesizedExpressionSyntax:
-                    return IsLeftMostNodeInConcat(node.Parent);
-            }
-            return true;
-        }
+            BinaryExpressionSyntax => false,
+            InterpolatedStringContentSyntax => false,
+            ParenthesizedExpressionSyntax => IsLeftMostNodeInConcat(node.Parent),
+            _ => true
+        };
 
         BinaryExpressionSyntax expression = (BinaryExpressionSyntax)context.Node;
         // Deduplicate warnings. Only left most '+' of the expression should be handled here.

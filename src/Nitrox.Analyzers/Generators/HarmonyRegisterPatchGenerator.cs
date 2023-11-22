@@ -32,7 +32,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
                                                      .CreateSyntaxProvider(
                                                          static (node, _) => IsSyntaxTargetForGeneration(node),
                                                          static (context, _) => GetSemanticTargetForGeneration(context))
-                                                     .Where(r => r is not null)
+                                                     .Where(r => r is not null)!
                                                      .WithComparer(NitroxHarmonyType.NitroxHarmonyTypeEqualityComparer.Instance);
 
         // Register the pipeline into the compiler.
@@ -111,7 +111,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         return true;
     }
 
-    private static NitroxHarmonyType GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    private static NitroxHarmonyType? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
         static bool IsValidPatchMethodName(string methodName) => harmonyMethodTypes.Contains(methodName.ToLowerInvariant());
 
@@ -127,13 +127,17 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
             return false;
         }
 
-        TypeDeclarationSyntax type = context.Node as TypeDeclarationSyntax;
-        if (type == null)
+        if (context.Node is not TypeDeclarationSyntax type)
+        {
+            return null;
+        }
+        string? namespaceName = type.GetNamespaceName();
+        if (namespaceName == null)
         {
             return null;
         }
         ImmutableArray<MemberDeclarationSyntax> members = type.Members.ToImmutableArray();
-        return new NitroxHarmonyType(type.GetNamespaceName(),
+        return new NitroxHarmonyType(namespaceName!,
                                      type.Identifier.ValueText,
                                      members.OfType<MethodDeclarationSyntax>()
                                             .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && IsValidPatchMethodName(m.Identifier.ValueText))
@@ -149,13 +153,13 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         {
             public static IEqualityComparer<NitroxHarmonyType> Instance { get; } = new NitroxHarmonyTypeEqualityComparer();
 
-            public bool Equals(NitroxHarmonyType x, NitroxHarmonyType y)
+            public bool Equals(NitroxHarmonyType? x, NitroxHarmonyType? y)
             {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                if (x.GetType() != y.GetType()) return false;
-                return string.Equals(x.NameSpace, y.NameSpace) &&
+                return ReferenceEquals(x, y) ||
+                       x is not null &&
+                       y is not null &&
+                       x.GetType() == y.GetType() &&
+                       string.Equals(x.NameSpace, y.NameSpace) &&
                        string.Equals(x.TypeName, y.TypeName) &&
                        x.HarmonyPatchMethods.SequenceEqual(y.HarmonyPatchMethods, HarmonyMethodEqualityComparer.Instance) &&
                        x.MethodInfoFields.SequenceEqual(y.MethodInfoFields, MethodInfoFieldEqualityComparer.Instance);
@@ -165,8 +169,8 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
             {
                 unchecked
                 {
-                    int hashCode = obj.NameSpace != null ? obj.NameSpace.GetHashCode() : 0;
-                    hashCode = (hashCode * 397) ^ (obj.TypeName != null ? obj.TypeName.GetHashCode() : 0);
+                    int hashCode = obj.NameSpace.GetHashCode();
+                    hashCode = hashCode * 397 ^ obj.TypeName.GetHashCode();
                     return hashCode;
                 }
             }
@@ -176,38 +180,18 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         {
             public static IEqualityComparer<MethodDeclarationSyntax> Instance { get; } = new HarmonyMethodEqualityComparer();
 
-            public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                if (x.GetType() != y.GetType()) return false;
-                return string.Equals(x.Identifier.ValueText, y.Identifier.ValueText);
-            }
+            public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y) => ReferenceEquals(x, y) || x.GetType() == y.GetType() && string.Equals(x.Identifier.ValueText, y.Identifier.ValueText);
 
-            public int GetHashCode(MethodDeclarationSyntax obj)
-            {
-                return obj.Identifier.ValueText.GetHashCode();
-            }
+            public int GetHashCode(MethodDeclarationSyntax obj) => obj.Identifier.ValueText.GetHashCode();
         }
 
         private sealed class MethodInfoFieldEqualityComparer : IEqualityComparer<FieldDeclarationSyntax>
         {
             public static IEqualityComparer<FieldDeclarationSyntax> Instance { get; } = new MethodInfoFieldEqualityComparer();
 
-            public bool Equals(FieldDeclarationSyntax x, FieldDeclarationSyntax y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (ReferenceEquals(x, null)) return false;
-                if (ReferenceEquals(y, null)) return false;
-                if (x.GetType() != y.GetType()) return false;
-                return x.ToString() == y.ToString();
-            }
+            public bool Equals(FieldDeclarationSyntax x, FieldDeclarationSyntax y) => ReferenceEquals(x, y) || x.GetType() == y.GetType() && x.ToString() == y.ToString();
 
-            public int GetHashCode(FieldDeclarationSyntax obj)
-            {
-                return obj.ToString().GetHashCode();
-            }
+            public int GetHashCode(FieldDeclarationSyntax obj) => obj.ToString().GetHashCode();
         }
     }
 }

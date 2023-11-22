@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -25,14 +24,14 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(analysisContext =>
         {
-            INamedTypeSymbol unityEngineObjectTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("UnityEngine.Object");
-            INamedTypeSymbol nitroxPatchTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("NitroxPatcher.Patches.NitroxPatch");
+            INamedTypeSymbol? unityEngineObjectTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("UnityEngine.Object");
+            INamedTypeSymbol? nitroxPatchTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("NitroxPatcher.Patches.NitroxPatch");
 
             analysisContext.RegisterSyntaxNodeAction(c => AnalyzeDependencyInjectionMisuse(c, unityEngineObjectTypeSymbol, nitroxPatchTypeSymbol), SyntaxKind.InvocationExpression);
         });
     }
 
-    private static void AnalyzeDependencyInjectionMisuse(SyntaxNodeAnalysisContext context, params INamedTypeSymbol[] allowedTypesUsingDependencyInjection)
+    private static void AnalyzeDependencyInjectionMisuse(SyntaxNodeAnalysisContext context, params INamedTypeSymbol?[] allowedTypesUsingDependencyInjection)
     {
         InvocationExpressionSyntax expression = (InvocationExpressionSyntax)context.Node;
         if (expression.ChildNodes().FirstOrDefault(n => n is MemberAccessExpressionSyntax) is not MemberAccessExpressionSyntax memberAccessExpression)
@@ -47,22 +46,26 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        if (!memberAccessIdentifier.GetName().Equals("NitroxServiceLocator", StringComparison.Ordinal))
+        if (memberAccessIdentifier.GetName() != "NitroxServiceLocator")
         {
             return;
         }
-        TypeDeclarationSyntax declaringType = expression.FindInParents<TypeDeclarationSyntax>();
+        TypeDeclarationSyntax? declaringType = expression.FindInParents<TypeDeclarationSyntax>();
         if (declaringType == null)
         {
             return;
         }
-        INamedTypeSymbol declaringTypeSymbol = context.SemanticModel.GetDeclaredSymbol(declaringType);
+        INamedTypeSymbol? declaringTypeSymbol = context.SemanticModel.GetDeclaredSymbol(declaringType);
         if (declaringTypeSymbol == null)
         {
             return;
         }
-        foreach (INamedTypeSymbol allowedType in allowedTypesUsingDependencyInjection)
+        foreach (INamedTypeSymbol? allowedType in allowedTypesUsingDependencyInjection)
         {
+            if (allowedType == null)
+            {
+                continue;
+            }
             if (declaringTypeSymbol.IsType(allowedType))
             {
                 return;
@@ -81,9 +84,6 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
                                                                                      DiagnosticSeverity.Warning,
                                                                                      true);
 
-        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, TypeDeclarationSyntax declaringType, Location location)
-        {
-            context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringType.GetName()));
-        }
+        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, TypeDeclarationSyntax declaringType, Location location) => context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringType.GetName()));
     }
 }

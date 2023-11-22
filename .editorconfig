@@ -1,0 +1,43 @@
+root = true
+# See the documentation for reference:
+# https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+
+[*]
+indent_style = space
+end_of_line = lf
+
+# ReSharper properties
+resharper_wrap_object_and_collection_initializer_style = chop_if_long
+
+[*.{proj, csproj, targets}]
+indent_size = 4
+insert_final_newline = true
+
+[App.config]
+indent_size = 4
+insert_final_newline = true
+
+[*.cs]
+indent_size = 4
+insert_final_newline = true
+charset = utf-8
+
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.IDE0007.severity = none
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0046.severity = none
+dotnet_diagnostic.IDE0058.severity = none
+# TODO: Remove the 2 lines below once Rider supports C# 12
+dotnet_diagnostic.IDE0028.severity = none
+dotnet_diagnostic.IDE0300.severity = none
+
+csharp_style_namespace_declarations = file_scoped
+csharp_style_expression_bodied_methods = when_on_single_line
+csharp_style_expression_bodied_local_functions = when_on_single_line
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary
+
+[*.g.cs]
+generated_code = true

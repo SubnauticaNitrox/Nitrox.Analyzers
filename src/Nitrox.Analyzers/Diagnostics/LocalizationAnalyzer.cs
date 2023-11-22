@@ -46,13 +46,14 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(startContext =>
         {
-            IMethodSymbol languageGetMethodSymbol = startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) as IMethodSymbol;
-            if (languageGetMethodSymbol == null)
+            if (startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) is not IMethodSymbol languageGetMethodSymbol)
             {
                 return;
             }
-
-            startContext.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.projectdir", out string projectDir);
+            if (!startContext.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.projectdir", out string? projectDir))
+            {
+                return;
+            }
             if (LocalizationHelper.Load(projectDir))
             {
                 startContext.RegisterSyntaxNodeAction(c => AnalyzeStringNode(c, languageGetMethodSymbol), SyntaxKind.StringLiteralExpression);
@@ -134,13 +135,13 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        public static bool Load(string projectDir)
+        public static bool Load(string? projectDir)
         {
             if (string.IsNullOrWhiteSpace(projectDir))
             {
                 return false;
             }
-            string solutionDir = Directory.GetParent(projectDir)?.Parent?.FullName;
+            string? solutionDir = Directory.GetParent(projectDir)?.Parent?.FullName;
             if (!Directory.Exists(solutionDir))
             {
                 return false;

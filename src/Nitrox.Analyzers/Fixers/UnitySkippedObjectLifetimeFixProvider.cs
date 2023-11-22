@@ -15,7 +15,6 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Nitrox.Analyzers.Fixers;
 
 [Shared]
-[JetBrains.Annotations.UsedImplicitly]
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UnitySkippedObjectLifetimeFixProvider))]
 public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
 {
@@ -27,8 +26,7 @@ public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         // Code template from: https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/tutorials/how-to-write-csharp-analyzer-code-fix
-        SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken)
-                                       .ConfigureAwait(false);
+        SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
         Diagnostic diagnostic = context.Diagnostics.First();
         TextSpan diagnosticSpan = diagnostic.Location.SourceSpan;
         ConditionalAccessExpressionSyntax declaration = root!.FindToken(diagnosticSpan.Start).Parent!.AncestorsAndSelf()
@@ -45,7 +43,7 @@ public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
 
     private async Task<Document> InsertAliveOrNullAsync(Document document, ConditionalAccessExpressionSyntax declaration, CancellationToken cancellationToken)
     {
-        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        SyntaxNode? root = await document.GetSyntaxRootAsync(cancellationToken);
         if (root == null)
         {
             return document;
