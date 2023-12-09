@@ -22,14 +22,12 @@ indent_size = 4
 insert_final_newline = true
 charset = utf-8
 
-dotnet_diagnostic.CS1591.severity = none
 dotnet_diagnostic.IDE0007.severity = none
 dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0022.severity = none
 dotnet_diagnostic.IDE0046.severity = none
 dotnet_diagnostic.IDE0058.severity = none
-# TODO: Remove the 2 lines below once Rider supports C# 12
-dotnet_diagnostic.IDE0028.severity = none
-dotnet_diagnostic.IDE0300.severity = none
+dotnet_diagnostic.IDE0061.severity = none
 
 csharp_style_namespace_declarations = file_scoped
 csharp_style_expression_bodied_methods = when_on_single_line

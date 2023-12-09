@@ -9,8 +9,10 @@ using Nitrox.Analyzers.Extensions;
 namespace Nitrox.Analyzers.Diagnostics;
 
 /// <summary>
-///     Dependency injection shouldn't be used in types that we can instantiate ourselves (i.e. not MonoBehaviours or Harmony patches).
-///     We should use the Dependency Injection container only when we can apply the DI pattern to effect. If not, making said type static is often more readable and performant.
+///     Dependency injection shouldn't be used in types that we can instantiate ourselves (i.e. not MonoBehaviours or
+///     Harmony patches).
+///     We should use the Dependency Injection container only when we can apply the DI pattern to effect. If not, making
+///     said type static is often more readable and performant.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
@@ -84,6 +86,9 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
                                                                                      DiagnosticSeverity.Warning,
                                                                                      true);
 
-        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, TypeDeclarationSyntax declaringType, Location location) => context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringType.GetName()));
+        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, TypeDeclarationSyntax declaringType, Location location)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringType.GetName()));
+        }
     }
 }

@@ -9,17 +9,7 @@ namespace Nitrox.Analyzers.Diagnostics;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
 {
-    public const string PREFER_INTERPOLATED_STRING_DIAGNOSTIC_ID = $"{nameof(StringUsageAnalyzer)}001";
-
-    private static readonly DiagnosticDescriptor preferInterpolatedStringRule = new(PREFER_INTERPOLATED_STRING_DIAGNOSTIC_ID,
-                                                                                    "Prefer interpolated string over string concat",
-                                                                                    "String concat can be turned into interpolated string",
-                                                                                    "Usage",
-                                                                                    DiagnosticSeverity.Warning,
-                                                                                    true,
-                                                                                    "Prefer interpolated string over concatenating strings");
-
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(preferInterpolatedStringRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.PreferInterpolatedStringRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -50,13 +40,16 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        static bool IsLeftMostNodeInConcat(SyntaxNode? node) => node switch
+        static bool IsLeftMostNodeInConcat(SyntaxNode? node)
         {
-            BinaryExpressionSyntax => false,
-            InterpolatedStringContentSyntax => false,
-            ParenthesizedExpressionSyntax => IsLeftMostNodeInConcat(node.Parent),
-            _ => true
-        };
+            return node switch
+            {
+                BinaryExpressionSyntax => false,
+                InterpolatedStringContentSyntax => false,
+                ParenthesizedExpressionSyntax => IsLeftMostNodeInConcat(node.Parent),
+                _ => true
+            };
+        }
 
         BinaryExpressionSyntax expression = (BinaryExpressionSyntax)context.Node;
         // Deduplicate warnings. Only left most '+' of the expression should be handled here.
@@ -70,6 +63,20 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(preferInterpolatedStringRule, expression.GetLocation(), expression));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.PreferInterpolatedStringRule, expression.GetLocation(), expression));
+    }
+
+    public static class Rules
+    {
+        private const string AnalyzerId = "NSU"; // Nitrox String Usage
+        public const string PreferInterpolatedStringDiagnosticId = $"{AnalyzerId}001";
+
+        internal static readonly DiagnosticDescriptor PreferInterpolatedStringRule = new(PreferInterpolatedStringDiagnosticId,
+                                                                                        "Prefer interpolated string over string concat",
+                                                                                        "String concat can be turned into interpolated string",
+                                                                                        "Usage",
+                                                                                        DiagnosticSeverity.Warning,
+                                                                                        true,
+                                                                                        "Prefer interpolated string over concatenating strings");
     }
 }

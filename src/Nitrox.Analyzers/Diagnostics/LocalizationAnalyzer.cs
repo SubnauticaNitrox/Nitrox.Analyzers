@@ -17,24 +17,14 @@ namespace Nitrox.Analyzers.Diagnostics;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 {
-    public const string INVALID_LOCALIZATION_KEY_DIAGNOSTIC_ID = $"{nameof(LocalizationAnalyzer)}001";
-
-    private const string NITROX_LOCALIZATION_PREFIX = "Nitrox_";
+    private const string NitroxLocalizationPrefix = "Nitrox_";
     private static readonly string relativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
     private static readonly Regex localizationParseRegex = new(@"^\s*""([^""]+)""\s*:\s*""([^""]+)""", RegexOptions.Compiled | RegexOptions.Multiline);
-
-    private static readonly DiagnosticDescriptor invalidLocalizationKeyRule = new(INVALID_LOCALIZATION_KEY_DIAGNOSTIC_ID,
-                                                                                  "Tests localization usages are valid",
-                                                                                  "Localization key '{0}' does not exist in '{1}'",
-                                                                                  "Usage",
-                                                                                  DiagnosticSeverity.Warning,
-                                                                                  true,
-                                                                                  "Tests that requested localization keys exist in the English localization file");
 
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
     /// </summary>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(invalidLocalizationKeyRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.InvalidLocalizationKeyRule);
 
     /// <summary>
     ///     Initializes the analyzer by registering on symbol occurrence in the targeted code.
@@ -85,7 +75,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
         }
         // Ignore language call for non-nitrox keys.
         string stringValue = expression.Token.ValueText;
-        if (!stringValue.StartsWith(NITROX_LOCALIZATION_PREFIX, StringComparison.OrdinalIgnoreCase))
+        if (!stringValue.StartsWith(NitroxLocalizationPrefix, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -93,7 +83,21 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        context.ReportDiagnostic(Diagnostic.Create(invalidLocalizationKeyRule, context.Node.GetLocation(), stringValue, LocalizationHelper.FileName));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.InvalidLocalizationKeyRule, context.Node.GetLocation(), stringValue, LocalizationHelper.FileName));
+    }
+
+    private static class Rules
+    {
+        private const string AnalyzerId = "NXLZ"; // Nitrox Localization
+        private const string InvalidLocalizationKeyDiagnosticId = $"{AnalyzerId}001";
+
+        public static readonly DiagnosticDescriptor InvalidLocalizationKeyRule = new(InvalidLocalizationKeyDiagnosticId,
+                                                                                     "Tests localization usages are valid",
+                                                                                     "Localization key '{0}' does not exist in '{1}'",
+                                                                                     "Usage",
+                                                                                     DiagnosticSeverity.Warning,
+                                                                                     true,
+                                                                                     "Tests that requested localization keys exist in the English localization file");
     }
 
     /// <summary>
@@ -159,7 +163,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
                 enJson = File.ReadAllText(EnglishLocalizationFileName);
             }
             // Parse localization JSON to dictionary for lookup.
-            Dictionary<string, string> keyValue = new();
+            Dictionary<string, string> keyValue = [];
             foreach (Match match in localizationParseRegex.Matches(enJson))
             {
                 keyValue.Add(match.Groups[1].Value, match.Groups[2].Value);

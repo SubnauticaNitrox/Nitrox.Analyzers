@@ -7,8 +7,15 @@ namespace Nitrox.Analyzers.Extensions;
 
 public static class SyntaxExtensions
 {
-    public static bool IsPartial(this TypeDeclarationSyntax typeSyntax) => typeSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
-    public static bool IsAbstract(this TypeDeclarationSyntax typeSyntax) => typeSyntax.Modifiers.Any(SyntaxKind.AbstractKeyword);
+    public static bool IsPartial(this TypeDeclarationSyntax typeSyntax)
+    {
+        return typeSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
+    }
+
+    public static bool IsAbstract(this TypeDeclarationSyntax typeSyntax)
+    {
+        return typeSyntax.Modifiers.Any(SyntaxKind.AbstractKeyword);
+    }
 
     public static bool HasAttributeWithName(this TypeDeclarationSyntax typeSyntax, string attributeName)
     {
@@ -42,28 +49,37 @@ public static class SyntaxExtensions
         return false;
     }
 
-    public static string? GetNamespaceName(this TypeDeclarationSyntax type) => type.Ancestors()
-                                                                                   .Select(n => n switch
-                                                                                   {
-                                                                                       FileScopedNamespaceDeclarationSyntax f => f.Name.ToString(),
-                                                                                       NamespaceDeclarationSyntax ns => ns.Name.ToString(),
-                                                                                       _ => null
-                                                                                   })
-                                                                                   .First();
-
-    public static string GetReturnTypeName(this MemberDeclarationSyntax member) => member switch
+    public static string? GetNamespaceName(this TypeDeclarationSyntax type)
     {
-        FieldDeclarationSyntax field => field.Declaration.ChildNodes().OfType<IdentifierNameSyntax>().FirstOrDefault()?.Identifier.ValueText ?? "",
-        MethodDeclarationSyntax method => method.ReturnType.ToString(),
-        _ => ""
-    };
+        return type.Ancestors()
+                   .Select(n => n switch
+                   {
+                       FileScopedNamespaceDeclarationSyntax f => f.Name.ToString(),
+                       NamespaceDeclarationSyntax ns => ns.Name.ToString(),
+                       _ => null
+                   })
+                   .First();
+    }
 
-    public static string GetName(this MemberDeclarationSyntax member) => member switch
+    public static string GetReturnTypeName(this MemberDeclarationSyntax member)
     {
-        FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
-        TypeDeclarationSyntax type => type.Identifier.Text,
-        _ => ""
-    };
+        return member switch
+        {
+            FieldDeclarationSyntax field => field.Declaration.ChildNodes().OfType<IdentifierNameSyntax>().FirstOrDefault()?.Identifier.ValueText ?? "",
+            MethodDeclarationSyntax method => method.ReturnType.ToString(),
+            _ => ""
+        };
+    }
+
+    public static string GetName(this MemberDeclarationSyntax member)
+    {
+        return member switch
+        {
+            FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
+            TypeDeclarationSyntax type => type.Identifier.Text,
+            _ => ""
+        };
+    }
 
     public static T? FindInParents<T>(this SyntaxNode node) where T : SyntaxNode
     {
@@ -75,10 +91,13 @@ public static class SyntaxExtensions
         return (T?)cur;
     }
 
-    public static string? GetName(this SyntaxNode node) => node switch
+    public static string? GetName(this SyntaxNode node)
     {
-        FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
-        TypeDeclarationSyntax type => type.Identifier.ValueText,
-        _ => node.TryGetInferredMemberName()
-    };
+        return node switch
+        {
+            FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
+            TypeDeclarationSyntax type => type.Identifier.ValueText,
+            _ => node.TryGetInferredMemberName()
+        };
+    }
 }

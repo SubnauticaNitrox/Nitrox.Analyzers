@@ -9,22 +9,14 @@ using Nitrox.Analyzers.Extensions;
 namespace Nitrox.Analyzers.Diagnostics;
 
 /// <summary>
-///     Test that calls to a method returning an IEnumerator are iterated (MoveNext is called). If they aren't iterated than the code in them won't
+///     Test that calls to a method returning an IEnumerator are iterated (MoveNext is called). If they aren't iterated
+///     than the code in them won't
 ///     continue after the first 'yield return'.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
 {
-    public const string UNUSED_ENUMERATOR = $"{nameof(EnumeratorUsageAnalyzer)}001";
-
-    private static readonly DiagnosticDescriptor unusedEnumerator = new(UNUSED_ENUMERATOR,
-                                                                        "IEnumerator is not iterated",
-                                                                        $"The IEnumerator '{{0}}' must be iterated by calling its {nameof(IEnumerator.MoveNext)} otherwise it will stop executing at the first 'yield return' expression",
-                                                                        "Usage",
-                                                                        DiagnosticSeverity.Warning,
-                                                                        true);
-
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(unusedEnumerator);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.UnusedEnumerator);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -55,6 +47,20 @@ public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(unusedEnumerator, expression.GetLocation(), methodSymbol.Name));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.UnusedEnumerator, expression.GetLocation(), methodSymbol.Name));
+    }
+
+    public static class Rules
+    {
+        private const string AnalyzerId = "NEU"; // Nitrox Enumerator Usage
+        public const string UnusedEnumeratorDiagnosticId = $"{AnalyzerId}001";
+
+        internal static readonly DiagnosticDescriptor UnusedEnumerator = new(UnusedEnumeratorDiagnosticId,
+                                                                            "IEnumerator is not iterated",
+                                                                            $"The IEnumerator '{{0}}' must be iterated by calling its {nameof(IEnumerator.MoveNext)} otherwise it will stop executing at the first 'yield return' expression",
+                                                                            "Usage",
+                                                                            DiagnosticSeverity.Warning,
+                                                                            true);
+
     }
 }

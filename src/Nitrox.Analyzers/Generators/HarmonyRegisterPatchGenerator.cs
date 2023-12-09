@@ -18,8 +18,8 @@ namespace Nitrox.Analyzers.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 {
-    private static readonly string[] harmonyMethodTypes = { "prefix", "postfix", "transpiler", "finalizer", "manipulator" };
-    private static readonly string[] validTargetMethodNames = { "target_method", "targetmethod", "target", "method" };
+    private static readonly string[] harmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
+    private static readonly string[] validTargetMethodNames = ["target_method", "targetmethod", "target", "method"];
     private static readonly Lazy<string> generatedCodeAttribute = new(() => $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]");
 
     [SuppressMessage("ReSharper", "SuggestVarOrType_Elsewhere")]
@@ -70,22 +70,23 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         }
 
         // Append new code to the compilation.
-        context.AddSource($"{nitroxHarmonyType.NameSpace}.{nitroxHarmonyType.TypeName}.g.cs", $$"""
-        #pragma warning disable
-        using System;
-        using HarmonyLib;
+        context.AddSource($"{nitroxHarmonyType.NameSpace}.{nitroxHarmonyType.TypeName}.g.cs",
+                          $$"""
+                            #pragma warning disable
+                            using System;
+                            using HarmonyLib;
 
-        namespace {{nitroxHarmonyType.NameSpace}};
+                            namespace {{nitroxHarmonyType.NameSpace}};
 
-        partial class {{nitroxHarmonyType.TypeName}}
-        {
-            {{generatedCodeAttribute.Value}}
-            public override void Patch(Harmony harmony)
-            {
-                {{patchImpl}}
-            }
-        }
-        """);
+                            partial class {{nitroxHarmonyType.TypeName}}
+                            {
+                                {{generatedCodeAttribute.Value}}
+                                public override void Patch(Harmony harmony)
+                                {
+                                    {{patchImpl}}
+                                }
+                            }
+                            """);
     }
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
@@ -113,7 +114,10 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 
     private static NitroxHarmonyType? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
-        static bool IsValidPatchMethodName(string methodName) => harmonyMethodTypes.Contains(methodName.ToLowerInvariant());
+        static bool IsValidPatchMethodName(string methodName)
+        {
+            return harmonyMethodTypes.Contains(methodName.ToLowerInvariant());
+        }
 
         static bool IsValidTargetMethodFieldName(string fieldName)
         {
@@ -136,7 +140,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         {
             return null;
         }
-        ImmutableArray<MemberDeclarationSyntax> members = type.Members.ToImmutableArray();
+        var members = type.Members.ToImmutableArray();
         return new NitroxHarmonyType(namespaceName!,
                                      type.Identifier.ValueText,
                                      members.OfType<MethodDeclarationSyntax>()
@@ -180,18 +184,30 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         {
             public static IEqualityComparer<MethodDeclarationSyntax> Instance { get; } = new HarmonyMethodEqualityComparer();
 
-            public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y) => ReferenceEquals(x, y) || x.GetType() == y.GetType() && string.Equals(x.Identifier.ValueText, y.Identifier.ValueText);
+            public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y)
+            {
+                return ReferenceEquals(x, y) || x.GetType() == y.GetType() && string.Equals(x.Identifier.ValueText, y.Identifier.ValueText);
+            }
 
-            public int GetHashCode(MethodDeclarationSyntax obj) => obj.Identifier.ValueText.GetHashCode();
+            public int GetHashCode(MethodDeclarationSyntax obj)
+            {
+                return obj.Identifier.ValueText.GetHashCode();
+            }
         }
 
         private sealed class MethodInfoFieldEqualityComparer : IEqualityComparer<FieldDeclarationSyntax>
         {
             public static IEqualityComparer<FieldDeclarationSyntax> Instance { get; } = new MethodInfoFieldEqualityComparer();
 
-            public bool Equals(FieldDeclarationSyntax x, FieldDeclarationSyntax y) => ReferenceEquals(x, y) || x.GetType() == y.GetType() && x.ToString() == y.ToString();
+            public bool Equals(FieldDeclarationSyntax x, FieldDeclarationSyntax y)
+            {
+                return ReferenceEquals(x, y) || x.GetType() == y.GetType() && x.ToString() == y.ToString();
+            }
 
-            public int GetHashCode(FieldDeclarationSyntax obj) => obj.ToString().GetHashCode();
+            public int GetHashCode(FieldDeclarationSyntax obj)
+            {
+                return obj.ToString().GetHashCode();
+            }
         }
     }
 }

@@ -18,10 +18,13 @@ namespace Nitrox.Analyzers.Fixers;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UnitySkippedObjectLifetimeFixProvider))]
 public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
 {
-    private static readonly IdentifierNameSyntax aliveOrNull = IdentifierName(UnitySkippedObjectLifetimeAnalyzer.FIX_FUNCTION_NAME);
-    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UnitySkippedObjectLifetimeAnalyzer.CONDITIONAL_ACCESS_DIAGNOSTIC_ID);
+    private static readonly IdentifierNameSyntax aliveOrNull = IdentifierName(UnitySkippedObjectLifetimeAnalyzer.FixFunctionName);
+    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UnitySkippedObjectLifetimeAnalyzer.Rules.ConditionalAccessDiagnosticId);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -34,7 +37,7 @@ public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
                                                              .First();
         context.RegisterCodeFix(
             CodeAction.Create(
-                equivalenceKey: UnitySkippedObjectLifetimeAnalyzer.CONDITIONAL_ACCESS_DIAGNOSTIC_ID,
+                equivalenceKey: UnitySkippedObjectLifetimeAnalyzer.Rules.ConditionalAccessDiagnosticId,
                 title: "Insert AliveOrNull() before conditional access of UnityEngine.Object",
                 createChangedDocument: c => InsertAliveOrNullAsync(context.Document, declaration, c)
             ),
@@ -55,7 +58,7 @@ public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
         root = root!.ReplaceNode(declaration, newDeclaration);
         // 2. Ensure using statement for extension method .AliveOrNull().
         // This is done after the "AliveOrNull" wrap because the declaration instance can't be found when root instance updates.
-        if (root is CompilationUnitSyntax compilationRoot && compilationRoot.Usings.All(u => u.Name.ToString() != UnitySkippedObjectLifetimeAnalyzer.FIX_FUNCTION_NAMESPACE))
+        if (root is CompilationUnitSyntax compilationRoot && compilationRoot.Usings.All(u => u.Name.ToString() != UnitySkippedObjectLifetimeAnalyzer.FixFunctionNamespace))
         {
             root = compilationRoot.AddUsings(UsingDirective(aliveOrNull));
         }
