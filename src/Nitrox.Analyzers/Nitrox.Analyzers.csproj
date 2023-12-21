@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <!-- Analyzers MUST target netstandard2.0, do not update unless Microsoft (MSDN) says it's possible. -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
