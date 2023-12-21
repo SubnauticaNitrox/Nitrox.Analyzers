@@ -52,16 +52,10 @@ public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
             return document;
         }
 
-        // 1. Wrap expression with an invocation to AliveOrNull, this will cause AliveOrNull to be called before the conditional access.
+        // Wrap expression with an invocation to AliveOrNull, this will cause AliveOrNull to be called before the conditional access.
         InvocationExpressionSyntax wrappedExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, declaration.Expression, aliveOrNull));
         SyntaxNode newDeclaration = declaration.ReplaceNode(declaration.Expression, wrappedExpression);
-        root = root!.ReplaceNode(declaration, newDeclaration);
-        // 2. Ensure using statement for extension method .AliveOrNull().
-        // This is done after the "AliveOrNull" wrap because the declaration instance can't be found when root instance updates.
-        if (root is CompilationUnitSyntax compilationRoot && compilationRoot.Usings.All(u => u.Name.ToString() != UnitySkippedObjectLifetimeAnalyzer.FixFunctionNamespace))
-        {
-            root = compilationRoot.AddUsings(UsingDirective(aliveOrNull));
-        }
+        root = root.ReplaceNode(declaration, newDeclaration);
 
         // Replace the old document with the new.
         return document.WithSyntaxRoot(root);

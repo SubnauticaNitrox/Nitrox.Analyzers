@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Nitrox.Analyzers.Extensions;
 
 namespace Nitrox.Analyzers.Diagnostics;
 
@@ -15,7 +14,6 @@ namespace Nitrox.Analyzers.Diagnostics;
 public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
 {
     public const string FixFunctionName = "AliveOrNull";
-    public const string FixFunctionNamespace = "NitroxClient.Unity.Helper";
 
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.

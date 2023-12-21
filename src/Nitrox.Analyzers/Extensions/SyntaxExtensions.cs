@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Nitrox.Analyzers.Extensions;
 
-public static class SyntaxExtensions
+internal static class SyntaxExtensions
 {
     public static bool IsPartial(this TypeDeclarationSyntax typeSyntax)
     {

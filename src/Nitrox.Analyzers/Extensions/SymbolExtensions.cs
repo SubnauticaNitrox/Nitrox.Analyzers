@@ -2,7 +2,7 @@
 
 namespace Nitrox.Analyzers.Extensions;
 
-public static class SymbolExtensions
+internal static class SymbolExtensions
 {
     public static bool IsType(this ITypeSymbol symbol, SemanticModel semanticModel, string fullyQualifiedTypeName)
     {
