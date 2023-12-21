@@ -19,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Nitrox.Analyzers\Nitrox.Analyzers.csproj"/>
+    <ProjectReference Include="..\Nitrox.Analyzers\Nitrox.Analyzers.csproj" />
   </ItemGroup>
 </Project>

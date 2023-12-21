@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitrox.Analyzers", "src\Nitrox.Analyzers\Nitrox.Analyzers.csproj", "{66222EF5-5099-43F8-B5AF-A6ECF249B337}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitrox.Analyzers.Test", "Nitrox.Analyzers.Test\Nitrox.Analyzers.Test.csproj", "{B23C6ECC-A034-4380-80C8-F550CD644375}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitrox.Analyzers.Test", "src\Nitrox.Analyzers.Test\Nitrox.Analyzers.Test.csproj", "{96E34455-71EA-4F2F-8032-23605C3D7FC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{66222EF5-5099-43F8-B5AF-A6ECF249B337}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66222EF5-5099-43F8-B5AF-A6ECF249B337}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66222EF5-5099-43F8-B5AF-A6ECF249B337}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B23C6ECC-A034-4380-80C8-F550CD644375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B23C6ECC-A034-4380-80C8-F550CD644375}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B23C6ECC-A034-4380-80C8-F550CD644375}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B23C6ECC-A034-4380-80C8-F550CD644375}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96E34455-71EA-4F2F-8032-23605C3D7FC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96E34455-71EA-4F2F-8032-23605C3D7FC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96E34455-71EA-4F2F-8032-23605C3D7FC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96E34455-71EA-4F2F-8032-23605C3D7FC5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
