@@ -8,9 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Nitrox.Analyzers.Diagnostics;
 
 /// <summary>
-///     Test that calls to a method returning an IEnumerator are iterated (MoveNext is called). If they aren't iterated
-///     than the code in them won't
-///     continue after the first 'yield return'.
+///     Test that calls to a method returning an IEnumerator are iterated (MoveNext is called).
+///     If they aren't iterated then the code in them won't continue after the first 'yield return'.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
@@ -55,11 +54,10 @@ public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
         public const string UnusedEnumeratorDiagnosticId = $"{AnalyzerId}001";
 
         internal static readonly DiagnosticDescriptor UnusedEnumerator = new(UnusedEnumeratorDiagnosticId,
-                                                                            "IEnumerator is not iterated",
-                                                                            $"The IEnumerator '{{0}}' must be iterated by calling its {nameof(IEnumerator.MoveNext)} otherwise it will stop executing at the first 'yield return' expression",
-                                                                            "Usage",
-                                                                            DiagnosticSeverity.Warning,
-                                                                            true);
-
+                                                                             "IEnumerator is not iterated",
+                                                                             $"The IEnumerator '{{0}}' must be iterated by calling its {nameof(IEnumerator.MoveNext)} otherwise it will stop executing at the first 'yield return' expression",
+                                                                             "Usage",
+                                                                             DiagnosticSeverity.Warning,
+                                                                             true);
     }
 }
