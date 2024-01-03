@@ -25,9 +25,10 @@
 
   <!-- Disable enforcing of some rules:
      1591: XML comments on public members
+     8601: Possible null reference assignment
      -->
   <PropertyGroup>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591;8601</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
