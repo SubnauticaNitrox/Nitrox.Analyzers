@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
+    <Version Condition="'$(Configuration)' == 'Debug'">$(Version)-dev$([System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds())</Version>
     <!-- Analyzers MUST target netstandard2.0, do not update unless Microsoft (MSDN) says it's possible. -->
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
