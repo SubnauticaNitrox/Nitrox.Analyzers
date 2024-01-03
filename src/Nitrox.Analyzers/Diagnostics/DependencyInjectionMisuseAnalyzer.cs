@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -28,30 +27,22 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
             INamedTypeSymbol? unityEngineObjectTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("UnityEngine.Object");
             INamedTypeSymbol? nitroxPatchTypeSymbol = analysisContext.Compilation.GetTypeByMetadataName("NitroxPatcher.Patches.NitroxPatch");
 
-            analysisContext.RegisterSyntaxNodeAction(c => AnalyzeDependencyInjectionMisuse(c, unityEngineObjectTypeSymbol, nitroxPatchTypeSymbol), SyntaxKind.InvocationExpression);
+            analysisContext.RegisterSyntaxNodeAction(c => AnalyzeDependencyInjectionMisuse(c, unityEngineObjectTypeSymbol, nitroxPatchTypeSymbol), SyntaxKind.SimpleMemberAccessExpression);
         });
     }
 
     private static void AnalyzeDependencyInjectionMisuse(SyntaxNodeAnalysisContext context, params INamedTypeSymbol?[] allowedTypesUsingDependencyInjection)
     {
-        InvocationExpressionSyntax expression = (InvocationExpressionSyntax)context.Node;
-        if (expression.ChildNodes().FirstOrDefault(n => n is MemberAccessExpressionSyntax) is not MemberAccessExpressionSyntax memberAccessExpression)
+        MemberAccessExpressionSyntax memberAccess = (MemberAccessExpressionSyntax)context.Node;
+        if (memberAccess.Expression is not IdentifierNameSyntax accessedIdentifier)
         {
             return;
         }
-        if (memberAccessExpression.DescendantNodes().FirstOrDefault(n => n is IdentifierNameSyntax) is not IdentifierNameSyntax memberAccessIdentifier)
+        if (accessedIdentifier.GetName() != "NitroxServiceLocator")
         {
             return;
         }
-        if (memberAccessIdentifier.Parent is TypeOfExpressionSyntax)
-        {
-            return;
-        }
-        if (memberAccessIdentifier.GetName() != "NitroxServiceLocator")
-        {
-            return;
-        }
-        TypeDeclarationSyntax? declaringType = expression.FindInParents<TypeDeclarationSyntax>();
+        TypeDeclarationSyntax? declaringType = memberAccess.FindInParents<TypeDeclarationSyntax>();
         if (declaringType == null)
         {
             return;
@@ -73,7 +64,7 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        Rules.ReportMisusedDependencyInjection(context, declaringType, memberAccessExpression.GetLocation());
+        Rules.ReportMisusedDependencyInjection(context, declaringType.GetName(), memberAccess.GetLocation());
     }
 
     private static class Rules
@@ -85,9 +76,9 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
                                                                                      DiagnosticSeverity.Warning,
                                                                                      true);
 
-        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, TypeDeclarationSyntax declaringType, Location location)
+        public static void ReportMisusedDependencyInjection(SyntaxNodeAnalysisContext context, string declaringTypeName, Location location)
         {
-            context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringType.GetName()));
+            context.ReportDiagnostic(Diagnostic.Create(MisusedDependencyInjection, location, declaringTypeName));
         }
     }
 }

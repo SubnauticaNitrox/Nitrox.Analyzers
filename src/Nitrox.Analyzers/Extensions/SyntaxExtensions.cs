@@ -97,6 +97,7 @@ internal static class SyntaxExtensions
         {
             FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
             TypeDeclarationSyntax type => type.Identifier.ValueText,
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
             _ => node.TryGetInferredMemberName()
         };
     }
