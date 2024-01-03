@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -17,11 +16,10 @@ namespace Nitrox.Analyzers.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 {
-    private static readonly string[] harmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
-    private static readonly string[] validTargetMethodNames = ["target_method", "targetmethod", "target", "method"];
-    private static readonly Lazy<string> generatedCodeAttribute = new(() => $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]");
+    private static readonly HashSet<string> HarmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
+    private static readonly HashSet<string> ValidTargetMethodNames = ["target_method", "targetmethod", "target", "method"];
+    private static readonly string GeneratedCodeAttribute = $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]";
 
-    [SuppressMessage("ReSharper", "SuggestVarOrType_Elsewhere")]
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Setup compilation pipeline for assemblies that use NitroxPatch.
@@ -31,55 +29,53 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
                                                      .CreateSyntaxProvider(
                                                          static (node, _) => IsSyntaxTargetForGeneration(node),
                                                          static (context, _) => GetSemanticTargetForGeneration(context))
-                                                     .Where(r => r is not null)!
-                                                     .WithComparer(NitroxHarmonyType.NitroxHarmonyTypeEqualityComparer.Instance);
-
+                                                     .Where(r => r is not null);
         // Register the pipeline into the compiler.
         var combinedPipeline = harmonyMethodsWithTargetMethods.Combine(compilationPipeline);
-        context.RegisterSourceOutput(combinedPipeline, static (context, source) => Execute(context, source.Left));
+        context.RegisterSourceOutput(combinedPipeline, static (context, source) => Execute(context, source.Left!));
     }
 
-    private static void Execute(SourceProductionContext context, NitroxHarmonyType nitroxHarmonyType)
+    private static void Execute(SourceProductionContext context, NitroxPatchInfo patchInfo)
     {
         // Build Patch method implementation.
         StringBuilder patchImpl = new();
-        for (int fieldIndex = 0; fieldIndex < nitroxHarmonyType.MethodInfoFields.Length; fieldIndex++)
+        for (int fieldIndex = 0; fieldIndex < patchInfo.Fields.Length; fieldIndex++)
         {
-            FieldDeclarationSyntax methodInfoField = nitroxHarmonyType.MethodInfoFields[fieldIndex];
+            NitroxPatchInfo.Field patchField = patchInfo.Fields[fieldIndex];
             patchImpl.Append("PatchMultiple(harmony, ")
-                     .Append(methodInfoField.GetName());
-            if (nitroxHarmonyType.HarmonyPatchMethods.Length > 0)
+                     .Append(patchField.Name);
+            if (patchInfo.Functions.Length > 0)
             {
                 patchImpl.Append(", ");
-                foreach (MethodDeclarationSyntax harmonyPatchMethod in nitroxHarmonyType.HarmonyPatchMethods)
+                foreach (NitroxPatchInfo.Function patchFunction in patchInfo.Functions)
                 {
-                    patchImpl.Append(harmonyPatchMethod.Identifier.ValueText.ToLowerInvariant())
+                    patchImpl.Append(patchFunction.HarmonyPatchTypeName)
                              .Append(": ((Delegate)")
-                             .Append(harmonyPatchMethod.Identifier.ValueText)
+                             .Append(patchFunction.Name)
                              .Append(").Method, ");
                 }
                 patchImpl.Remove(patchImpl.Length - 2, 2);
             }
             patchImpl.Append(");");
             // Append new line if not last implementation line.
-            if (fieldIndex < nitroxHarmonyType.MethodInfoFields.Length - 1)
+            if (fieldIndex < patchInfo.Fields.Length - 1)
             {
-                patchImpl.AppendLine();
+                patchImpl.AppendLine().Append("        ");
             }
         }
 
         // Append new code to the compilation.
-        context.AddSource($"{nitroxHarmonyType.NameSpace}.{nitroxHarmonyType.TypeName}.g.cs",
+        context.AddSource($"{patchInfo.NameSpace}.{patchInfo.TypeName}.g.cs",
                           $$"""
                             #pragma warning disable
                             using System;
                             using HarmonyLib;
 
-                            namespace {{nitroxHarmonyType.NameSpace}};
+                            namespace {{patchInfo.NameSpace}};
 
-                            partial class {{nitroxHarmonyType.TypeName}}
+                            partial class {{patchInfo.TypeName}}
                             {
-                                {{generatedCodeAttribute.Value}}
+                                {{GeneratedCodeAttribute}}
                                 public override void Patch(Harmony harmony)
                                 {
                                     {{patchImpl}}
@@ -111,22 +107,33 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         return true;
     }
 
-    private static NitroxHarmonyType? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
+    private static NitroxPatchInfo? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
-        static bool IsValidPatchMethodName(string methodName)
+        static bool IsValidPatchMethodName(string methodName, out string? patchTypeName)
         {
-            return harmonyMethodTypes.Contains(methodName.ToLowerInvariant());
-        }
-
-        static bool IsValidTargetMethodFieldName(string fieldName)
-        {
-            foreach (string n in validTargetMethodNames)
+            foreach (string harmonyMethodType in HarmonyMethodTypes)
             {
-                if (fieldName.StartsWith(n, StringComparison.OrdinalIgnoreCase))
+                if (methodName.StartsWith(harmonyMethodType, StringComparison.OrdinalIgnoreCase))
                 {
+                    patchTypeName = harmonyMethodType;
                     return true;
                 }
             }
+            patchTypeName = null;
+            return false;
+        }
+
+        static bool IsValidTargetMethodFieldName(string fieldName, out string? targetMethodType)
+        {
+            foreach (string validTargetMethodName in ValidTargetMethodNames)
+            {
+                if (fieldName.StartsWith(validTargetMethodName, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetMethodType = validTargetMethodName;
+                    return true;
+                }
+            }
+            targetMethodType = null;
             return false;
         }
 
@@ -140,73 +147,69 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
             return null;
         }
         var members = type.Members.ToImmutableArray();
-        return new NitroxHarmonyType(namespaceName!,
-                                     type.Identifier.ValueText,
-                                     members.OfType<MethodDeclarationSyntax>()
-                                            .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && IsValidPatchMethodName(m.Identifier.ValueText))
-                                            .ToImmutableArray(),
-                                     members.OfType<FieldDeclarationSyntax>()
-                                            .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && m.GetReturnTypeName() == "MethodInfo" && IsValidTargetMethodFieldName(m.GetName()))
-                                            .ToImmutableArray());
+        return new NitroxPatchInfo(namespaceName,
+                                   type.Identifier.ValueText,
+                                   members.OfType<MethodDeclarationSyntax>()
+                                          .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && IsValidPatchMethodName(m.Identifier.ValueText, out string _))
+                                          .Select(m =>
+                                          {
+                                              IsValidPatchMethodName(m.Identifier.ValueText, out string? patchTypeName);
+                                              if (patchTypeName == null)
+                                              {
+                                                  return null;
+                                              }
+                                              return new NitroxPatchInfo.Function(m.Identifier.ValueText, patchTypeName);
+                                          })
+                                          .Where(m => m != null)
+                                          .ToImmutableArray()!,
+                                   members.OfType<FieldDeclarationSyntax>()
+                                          .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && m.GetReturnTypeName() == "MethodInfo" && IsValidTargetMethodFieldName(m.GetName(), out string _))
+                                          .Select(m =>
+                                          {
+                                              IsValidTargetMethodFieldName(m.GetName(), out string? targetMethodType);
+                                              if (targetMethodType == null)
+                                              {
+                                                  return null;
+                                              }
+                                              return new NitroxPatchInfo.Field(m.GetName(), targetMethodType);
+                                          })
+                                          .Where(m => m != null)
+                                          .ToImmutableArray()!);
     }
 
-    internal record NitroxHarmonyType(string NameSpace, string TypeName, ImmutableArray<MethodDeclarationSyntax> HarmonyPatchMethods, ImmutableArray<FieldDeclarationSyntax> MethodInfoFields)
+    /// <param name="NameSpace">Namespace that the patch is in.</param>
+    /// <param name="TypeName">Name of the patch type.</param>
+    /// <param name="Functions">Harmony patch functions declared in the patch.</param>
+    /// <param name="Fields">Fields that specify a method info to be patched.</param>
+    private record NitroxPatchInfo(string NameSpace, string TypeName, ImmutableArray<NitroxPatchInfo.Function> Functions, ImmutableArray<NitroxPatchInfo.Field> Fields)
     {
-        internal sealed class NitroxHarmonyTypeEqualityComparer : IEqualityComparer<NitroxHarmonyType>
+        public virtual bool Equals(NitroxPatchInfo? other)
         {
-            public static IEqualityComparer<NitroxHarmonyType> Instance { get; } = new NitroxHarmonyTypeEqualityComparer();
-
-            public bool Equals(NitroxHarmonyType? x, NitroxHarmonyType? y)
+            if (other is null)
             {
-                return ReferenceEquals(x, y) ||
-                       x is not null &&
-                       y is not null &&
-                       x.GetType() == y.GetType() &&
-                       string.Equals(x.NameSpace, y.NameSpace) &&
-                       string.Equals(x.TypeName, y.TypeName) &&
-                       x.HarmonyPatchMethods.SequenceEqual(y.HarmonyPatchMethods, HarmonyMethodEqualityComparer.Instance) &&
-                       x.MethodInfoFields.SequenceEqual(y.MethodInfoFields, MethodInfoFieldEqualityComparer.Instance);
+                return false;
             }
-
-            public int GetHashCode(NitroxHarmonyType obj)
+            if (ReferenceEquals(this, other))
             {
-                unchecked
-                {
-                    int hashCode = obj.NameSpace.GetHashCode();
-                    hashCode = hashCode * 397 ^ obj.TypeName.GetHashCode();
-                    return hashCode;
-                }
+                return true;
+            }
+            return NameSpace == other.NameSpace && TypeName == other.TypeName && Functions.SequenceEqual(other.Functions) && Fields.SequenceEqual(other.Fields);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = NameSpace.GetHashCode();
+                hashCode = hashCode * 397 ^ TypeName.GetHashCode();
+                hashCode = hashCode * 397 ^ Functions.GetHashCode();
+                hashCode = hashCode * 397 ^ Fields.GetHashCode();
+                return hashCode;
             }
         }
 
-        private sealed class HarmonyMethodEqualityComparer : IEqualityComparer<MethodDeclarationSyntax>
-        {
-            public static IEqualityComparer<MethodDeclarationSyntax> Instance { get; } = new HarmonyMethodEqualityComparer();
+        public record Field(string Name, string TargetMethodTypeName);
 
-            public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y)
-            {
-                return ReferenceEquals(x, y) || x.GetType() == y.GetType() && string.Equals(x.Identifier.ValueText, y.Identifier.ValueText);
-            }
-
-            public int GetHashCode(MethodDeclarationSyntax obj)
-            {
-                return obj.Identifier.ValueText.GetHashCode();
-            }
-        }
-
-        private sealed class MethodInfoFieldEqualityComparer : IEqualityComparer<FieldDeclarationSyntax>
-        {
-            public static IEqualityComparer<FieldDeclarationSyntax> Instance { get; } = new MethodInfoFieldEqualityComparer();
-
-            public bool Equals(FieldDeclarationSyntax x, FieldDeclarationSyntax y)
-            {
-                return ReferenceEquals(x, y) || x.GetType() == y.GetType() && x.ToString() == y.ToString();
-            }
-
-            public int GetHashCode(FieldDeclarationSyntax obj)
-            {
-                return obj.ToString().GetHashCode();
-            }
-        }
+        public record Function(string Name, string HarmonyPatchTypeName);
     }
 }

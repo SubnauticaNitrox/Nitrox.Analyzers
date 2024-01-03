@@ -18,8 +18,8 @@ namespace Nitrox.Analyzers.Diagnostics;
 public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 {
     private const string NitroxLocalizationPrefix = "Nitrox_";
-    private static readonly string relativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
-    private static readonly Regex localizationParseRegex = new(@"^\s*""([^""]+)""\s*:\s*""([^""]+)""", RegexOptions.Compiled | RegexOptions.Multiline);
+    private static readonly string RelativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
+    private static readonly Regex LocalizationParseRegex = new(@"^\s*""([^""]+)""\s*:\s*""([^""]+)""", RegexOptions.Compiled | RegexOptions.Multiline);
 
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
@@ -154,7 +154,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             string enJson;
             lock (locker)
             {
-                EnglishLocalizationFileName = Path.Combine(solutionDir, relativePathFromSolutionDirToEnglishLanguageFile);
+                EnglishLocalizationFileName = Path.Combine(solutionDir, RelativePathFromSolutionDirToEnglishLanguageFile);
                 if (!File.Exists(EnglishLocalizationFileName))
                 {
                     return false;
@@ -164,7 +164,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             }
             // Parse localization JSON to dictionary for lookup.
             Dictionary<string, string> keyValue = [];
-            foreach (Match match in localizationParseRegex.Matches(enJson))
+            foreach (Match match in LocalizationParseRegex.Matches(enJson))
             {
                 keyValue.Add(match.Groups[1].Value, match.Groups[2].Value);
             }
