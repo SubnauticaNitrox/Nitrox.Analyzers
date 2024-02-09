@@ -12,3 +12,7 @@ Analyzers and source generators to assist with Nitrox mod development
 ## Deploy
 1. Run `dotnet build -c Release`
 2. Upload nuget package to NuGET
+
+
+## Helpful links for contributors
+https://andrewlock.net/series/creating-a-source-generator/
