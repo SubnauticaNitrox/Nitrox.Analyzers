@@ -6,7 +6,7 @@ using Rules = Nitrox.Analyzers.Diagnostics.UnitySkippedObjectLifetimeAnalyzer.Ru
 namespace Nitrox.Analyzers.Test;
 
 [TestClass]
-public class UnitySkippedObjectLifetimeAnalyzerTest
+public class UnitySkippedObjectLifetimeAnalyzerTests
 {
     [TestMethod]
     public Task ConditionalAccess_Diagnostic()

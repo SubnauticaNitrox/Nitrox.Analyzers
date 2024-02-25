@@ -63,12 +63,17 @@ internal static class SyntaxExtensions
 
     public static string GetReturnTypeName(this MemberDeclarationSyntax member)
     {
-        return member switch
+        // .ChildNodes().OfType<QualifiedNameSyntax>().FirstOrDefault().Right.Identifier.ValueText
+        switch (member)
         {
-            FieldDeclarationSyntax field => field.Declaration.ChildNodes().OfType<IdentifierNameSyntax>().FirstOrDefault()?.Identifier.ValueText ?? "",
-            MethodDeclarationSyntax method => method.ReturnType.ToString(),
-            _ => ""
-        };
+            case FieldDeclarationSyntax field:
+                string? name = field.Declaration.ChildNodes().OfType<IdentifierNameSyntax>().FirstOrDefault()?.Identifier.ValueText ?? field.Declaration.ChildNodes().OfType<QualifiedNameSyntax>().FirstOrDefault()?.Right.Identifier.ValueText;
+                return name ?? "";
+            case MethodDeclarationSyntax method:
+                return method.ReturnType.ToString();
+            default:
+                return "";
+        }
     }
 
     public static string GetName(this MemberDeclarationSyntax member)
