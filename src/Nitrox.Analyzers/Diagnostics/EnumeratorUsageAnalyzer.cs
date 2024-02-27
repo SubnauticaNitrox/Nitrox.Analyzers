@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Nitrox.Analyzers.Diagnostics;
 
 /// <summary>
-///     Test that calls to a method returning an IEnumerator are iterated (MoveNext is called).
+///     Test that calls, returning an IEnumerator, are iterated (i.e. MoveNext is called).
 ///     If they aren't iterated then the code in them won't continue after the first 'yield return'.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
