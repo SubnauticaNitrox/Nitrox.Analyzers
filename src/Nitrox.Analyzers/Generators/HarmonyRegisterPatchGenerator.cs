@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,7 +18,7 @@ namespace Nitrox.Analyzers.Generators;
 internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> HarmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
-    private static readonly HashSet<string> ValidTargetMethodNames = ["target_method", "targetmethod", "target", "method"];
+    private static readonly HashSet<string> ValidTargetMethodNamePrefixes = ["target"];
     private static readonly string GeneratedCodeAttribute = $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -125,7 +126,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 
         static bool IsValidTargetMethodFieldName(string fieldName, out string? targetMethodType)
         {
-            foreach (string validTargetMethodName in ValidTargetMethodNames)
+            foreach (string validTargetMethodName in ValidTargetMethodNamePrefixes)
             {
                 if (fieldName.StartsWith(validTargetMethodName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -163,7 +164,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
                                           .Where(m => m != null)
                                           .ToImmutableArray()!,
                                    members.OfType<FieldDeclarationSyntax>()
-                                          .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && m.GetReturnTypeName() == "MethodInfo" && IsValidTargetMethodFieldName(m.GetName(), out string _))
+                                          .Where(m => m.Modifiers.Any(SyntaxKind.StaticKeyword) && m.GetReturnTypeName() == nameof(MethodInfo) && IsValidTargetMethodFieldName(m.GetName(), out string _))
                                           .Select(m =>
                                           {
                                               IsValidTargetMethodFieldName(m.GetName(), out string? targetMethodType);
