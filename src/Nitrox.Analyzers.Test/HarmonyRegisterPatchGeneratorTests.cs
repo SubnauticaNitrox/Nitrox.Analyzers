@@ -54,8 +54,8 @@ partial class SomePatch
 
         var driver = CSharpGeneratorDriver.Create(new HarmonyRegisterPatchGenerator());
         var compilation = CSharpCompilation.Create("NitroxPatcher",
-                                                   new[] { CSharpSyntaxTree.ParseText(patchClassText) },
-                                                   new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
+                                                   [CSharpSyntaxTree.ParseText(patchClassText)],
+                                                   [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
 
         GeneratorDriverRunResult result = driver.RunGenerators(compilation).GetRunResult();
         SyntaxTree generatedFileSyntax = result.GeneratedTrees.Single(t => t.FilePath.EndsWith("SomePatch.g.cs"));

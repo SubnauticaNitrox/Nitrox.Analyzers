@@ -13,13 +13,16 @@ namespace Nitrox.Analyzers.Diagnostics;
 
 /// <summary>
 ///     Tests that requested localization keys exist in the English localization file.
+///     TODO: 1) Don't hard code; allow configuration via MSBuild properties. 2) Supply language file(s) to this analyzer via compiler pipeline instead of using IO, which is bad practice.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 {
     private const string NitroxLocalizationPrefix = "Nitrox_";
     private static readonly string RelativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
-    private static readonly Regex LocalizationParseRegex = new(@"^\s*""([^""]+)""\s*:\s*""([^""]+)""", RegexOptions.Compiled | RegexOptions.Multiline);
+    private static readonly Regex LocalizationParseRegex = new("""
+                                                               ^\s*"([^"]+)"\s*:\s*"([^"]+)"
+                                                               """, RegexOptions.Multiline);
 
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
@@ -36,17 +39,17 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(startContext =>
         {
-            if (startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) is not IMethodSymbol languageGetMethodSymbol)
+            IMethodSymbol? languageGetMethodSymbol = startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) as IMethodSymbol;
+            if (languageGetMethodSymbol == null)
             {
                 return;
             }
-            if (!startContext.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.projectdir", out string? projectDir))
-            {
-                return;
-            }
-            if (LocalizationHelper.Load(projectDir))
+
+            startContext.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue("build_property.projectdir", out string? projectDir);
+            if (LocalizationHelper.TryLoad(projectDir))
             {
                 startContext.RegisterSyntaxNodeAction(c => AnalyzeStringNode(c, languageGetMethodSymbol), SyntaxKind.StringLiteralExpression);
+                startContext.RegisterSyntaxNodeAction(AnalyzeSetTextStringNode, SyntaxKind.InvocationExpression);
             }
         });
     }
@@ -86,6 +89,59 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(Rules.InvalidLocalizationKeyRule, context.Node.GetLocation(), stringValue, LocalizationHelper.FileName));
     }
 
+
+    /// <summary>
+    ///     Analyzes SetText parameter literals in code.
+    /// </summary>
+    private void AnalyzeSetTextStringNode(SyntaxNodeAnalysisContext context)
+    {
+        InvocationExpressionSyntax expression = (InvocationExpressionSyntax)context.Node;
+        if (expression.ChildNodes().FirstOrDefault(n => n is MemberAccessExpressionSyntax) is not MemberAccessExpressionSyntax memberAccessExpression)
+        {
+            return;
+        }
+        // Performance: check SetText first to not call SemanticModel lookup for every invocation expression.
+        IdentifierNameSyntax? funcName = memberAccessExpression.DescendantNodes().OfType<IdentifierNameSyntax>().LastOrDefault();
+        if (funcName?.Identifier.ValueText != "SetText")
+        {
+            return;
+        }
+
+        // "translate" is by default false, only interesting if "translate" != false
+        if (expression.ArgumentList.Arguments.Count != 2)
+        {
+            return;
+        }
+        SyntaxNode? secondArgumentNode = expression.ArgumentList.Arguments.ElementAtOrDefault(1)?.ChildNodes().FirstOrDefault();
+        if (secondArgumentNode is LiteralExpressionSyntax literalSecond && literalSecond.IsKind(SyntaxKind.FalseLiteralExpression))
+        {
+            return;
+        }
+        SyntaxNode? firstArgumentNode = expression.ArgumentList.Arguments.ElementAtOrDefault(0)?.ChildNodes().FirstOrDefault();
+        if (firstArgumentNode is not LiteralExpressionSyntax literalFirst)
+        {
+            return;
+        }
+
+        // Ignore language call for non-nitrox keys.
+        string stringValue = literalFirst.Token.ValueText;
+        if (!stringValue.StartsWith(NitroxLocalizationPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+        
+        // Now run the expensive code, checking if it's a call on a uGUI_Text method. 
+        if (context.SemanticModel.GetSymbolInfo(expression).Symbol?.ContainingType.Name != "uGUI_Text")
+        {
+            return;
+        }
+        if (LocalizationHelper.ContainsKey(stringValue))
+        {
+            return;
+        }
+        context.ReportDiagnostic(Diagnostic.Create(Rules.InvalidLocalizationKeyRule, context.Node.GetLocation(), stringValue, LocalizationHelper.FileName));
+    }
+
     private static class Rules
     {
         private const string AnalyzerId = "NXLZ"; // Nitrox Localization
@@ -99,7 +155,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
                                                                                      true,
                                                                                      "Tests that requested localization keys exist in the English localization file");
     }
-
+    
     /// <summary>
     ///     Wrapper API for synchronized access to the English localization file.
     /// </summary>
@@ -139,7 +195,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        public static bool Load(string? projectDir)
+        public static bool TryLoad(string? projectDir)
         {
             if (string.IsNullOrWhiteSpace(projectDir))
             {
