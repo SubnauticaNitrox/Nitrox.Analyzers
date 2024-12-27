@@ -110,34 +110,6 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 
     private static NitroxPatchInfo? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
     {
-        static bool IsValidPatchMethodName(string methodName, out string? patchTypeName)
-        {
-            foreach (string harmonyMethodType in harmonyMethodTypes)
-            {
-                if (methodName.StartsWith(harmonyMethodType, StringComparison.OrdinalIgnoreCase))
-                {
-                    patchTypeName = harmonyMethodType;
-                    return true;
-                }
-            }
-            patchTypeName = null;
-            return false;
-        }
-
-        static bool IsValidTargetMethodFieldName(string fieldName, out string? targetMethodType)
-        {
-            foreach (string validTargetMethodName in validTargetMethodNamePrefixes)
-            {
-                if (fieldName.StartsWith(validTargetMethodName, StringComparison.OrdinalIgnoreCase))
-                {
-                    targetMethodType = validTargetMethodName;
-                    return true;
-                }
-            }
-            targetMethodType = null;
-            return false;
-        }
-
         if (context.Node is not TypeDeclarationSyntax type)
         {
             return null;
@@ -176,6 +148,34 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
                                           })
                                           .Where(m => m != null)
                                           .ToImmutableArray()!);
+
+        static bool IsValidTargetMethodFieldName(string fieldName, out string? targetMethodType)
+        {
+            foreach (string validTargetMethodName in validTargetMethodNamePrefixes)
+            {
+                if (fieldName.StartsWith(validTargetMethodName, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetMethodType = validTargetMethodName;
+                    return true;
+                }
+            }
+            targetMethodType = null;
+            return false;
+        }
+
+        static bool IsValidPatchMethodName(string methodName, out string? patchTypeName)
+        {
+            foreach (string harmonyMethodType in harmonyMethodTypes)
+            {
+                if (methodName.StartsWith(harmonyMethodType, StringComparison.OrdinalIgnoreCase))
+                {
+                    patchTypeName = harmonyMethodType;
+                    return true;
+                }
+            }
+            patchTypeName = null;
+            return false;
+        }
     }
 
     /// <param name="NameSpace">Namespace that the patch is in.</param>

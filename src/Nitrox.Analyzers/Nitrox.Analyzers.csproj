@@ -22,7 +22,7 @@
      See this link when to upgrade: https://learn.microsoft.com/en-us/visualstudio/extensibility/roslyn-version-support?view=vs-2022
      -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.1" PrivateAssets="all" Pack="false"/>
-    <PackageReference Include="PolySharp" Version="1.13.2">
+    <PackageReference Include="PolySharp" Version="1.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
