@@ -38,5 +38,16 @@ dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary
 dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary
 
+# Define naming styles
+dotnet_naming_style.camel_case_identifier.capitalization = camel_case
+# Define naming symbols
+dotnet_naming_symbols.private_static_readonly_field.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_field.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_field.required_modifiers = readonly
+# Define naming rules, combining styles and symbols
+dotnet_naming_rule.private_member_fields_camel_case.symbols = private_static_readonly_field
+dotnet_naming_rule.private_member_fields_camel_case.style = camel_case_identifier
+dotnet_naming_rule.private_member_fields_camel_case.severity = warning
+
 [*.g.cs]
 generated_code = true

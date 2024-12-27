@@ -17,9 +17,9 @@ namespace Nitrox.Analyzers.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 {
-    private static readonly HashSet<string> HarmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
-    private static readonly HashSet<string> ValidTargetMethodNamePrefixes = ["target"];
-    private static readonly string GeneratedCodeAttribute = $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]";
+    private static readonly HashSet<string> harmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
+    private static readonly HashSet<string> validTargetMethodNamePrefixes = ["targetmethod", "target_method"];
+    private static readonly string generatedCodeAttribute = $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -76,7 +76,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 
                             partial class {{patchInfo.TypeName}}
                             {
-                                {{GeneratedCodeAttribute}}
+                                {{generatedCodeAttribute}}
                                 public override void Patch(Harmony harmony)
                                 {
                                     {{patchImpl}}
@@ -112,7 +112,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
     {
         static bool IsValidPatchMethodName(string methodName, out string? patchTypeName)
         {
-            foreach (string harmonyMethodType in HarmonyMethodTypes)
+            foreach (string harmonyMethodType in harmonyMethodTypes)
             {
                 if (methodName.StartsWith(harmonyMethodType, StringComparison.OrdinalIgnoreCase))
                 {
@@ -126,7 +126,7 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 
         static bool IsValidTargetMethodFieldName(string fieldName, out string? targetMethodType)
         {
-            foreach (string validTargetMethodName in ValidTargetMethodNamePrefixes)
+            foreach (string validTargetMethodName in validTargetMethodNamePrefixes)
             {
                 if (fieldName.StartsWith(validTargetMethodName, StringComparison.OrdinalIgnoreCase))
                 {

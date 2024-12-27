@@ -19,8 +19,8 @@ namespace Nitrox.Analyzers.Diagnostics;
 public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 {
     private const string NitroxLocalizationPrefix = "Nitrox_";
-    private static readonly string RelativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
-    private static readonly Regex LocalizationParseRegex = new("""
+    private static readonly string relativePathFromSolutionDirToEnglishLanguageFile = Path.Combine("Nitrox.Assets.Subnautica", "LanguageFiles", "en.json");
+    private static readonly Regex localizationParseRegex = new("""
                                                                ^\s*"([^"]+)"\s*:\s*"([^"]+)"
                                                                """, RegexOptions.Multiline);
 
@@ -39,8 +39,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(startContext =>
         {
-            IMethodSymbol? languageGetMethodSymbol = startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) as IMethodSymbol;
-            if (languageGetMethodSymbol == null)
+            if (startContext.Compilation.GetTypesByMetadataName("Language").FirstOrDefault(a => a.ContainingAssembly.Name.Equals("Assembly-Csharp", StringComparison.OrdinalIgnoreCase))?.GetMembers("Get").FirstOrDefault(m => m.Kind == SymbolKind.Method) is not IMethodSymbol languageGetMethodSymbol)
             {
                 return;
             }
@@ -129,8 +128,8 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        
-        // Now run the expensive code, checking if it's a call on a uGUI_Text method. 
+
+        // Now run the expensive code, checking if it's a call on a uGUI_Text method.
         if (context.SemanticModel.GetSymbolInfo(expression).Symbol?.ContainingType.Name != "uGUI_Text")
         {
             return;
@@ -155,7 +154,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
                                                                                      true,
                                                                                      "Tests that requested localization keys exist in the English localization file");
     }
-    
+
     /// <summary>
     ///     Wrapper API for synchronized access to the English localization file.
     /// </summary>
@@ -164,17 +163,6 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
         private static readonly object locker = new();
         private static string EnglishLocalizationFileName { get; set; } = "";
         private static ImmutableDictionary<string, string> EnglishLocalization { get; set; } = ImmutableDictionary<string, string>.Empty;
-
-        public static bool IsEmpty
-        {
-            get
-            {
-                lock (locker)
-                {
-                    return EnglishLocalization.IsEmpty;
-                }
-            }
-        }
 
         public static string FileName
         {
@@ -210,7 +198,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             string enJson;
             lock (locker)
             {
-                EnglishLocalizationFileName = Path.Combine(solutionDir, RelativePathFromSolutionDirToEnglishLanguageFile);
+                EnglishLocalizationFileName = Path.Combine(solutionDir, relativePathFromSolutionDirToEnglishLanguageFile);
                 if (!File.Exists(EnglishLocalizationFileName))
                 {
                     return false;
@@ -220,7 +208,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
             }
             // Parse localization JSON to dictionary for lookup.
             Dictionary<string, string> keyValue = [];
-            foreach (Match match in LocalizationParseRegex.Matches(enJson))
+            foreach (Match match in localizationParseRegex.Matches(enJson))
             {
                 keyValue.Add(match.Groups[1].Value, match.Groups[2].Value);
             }
