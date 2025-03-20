@@ -19,7 +19,7 @@ namespace Nitrox.Analyzers.Fixers;
 public sealed class UnitySkippedObjectLifetimeFixProvider : CodeFixProvider
 {
     private static readonly IdentifierNameSyntax aliveOrNull = IdentifierName(UnitySkippedObjectLifetimeAnalyzer.FixFunctionName);
-    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UnitySkippedObjectLifetimeAnalyzer.Rules.ConditionalAccessDiagnosticId);
+    public override ImmutableArray<string> FixableDiagnosticIds => [UnitySkippedObjectLifetimeAnalyzer.Rules.ConditionalAccessDiagnosticId];
 
     public override FixAllProvider GetFixAllProvider()
     {

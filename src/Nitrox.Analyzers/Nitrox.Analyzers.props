@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup>
+        <!-- Keep in sync with GeneratorOptionsProvider.cs -->
+        <CompilerVisibleProperty Include="NitroxAnalyzers_GenerateInterceptorAttribute" />
+    </ItemGroup>
+</Project>

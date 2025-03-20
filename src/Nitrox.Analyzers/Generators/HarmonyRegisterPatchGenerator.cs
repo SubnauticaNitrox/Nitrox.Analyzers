@@ -7,6 +7,8 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Nitrox.Analyzers.Helpers;
+using Nitrox.Analyzers.Models;
 
 namespace Nitrox.Analyzers.Generators;
 
@@ -19,7 +21,6 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> harmonyMethodTypes = ["prefix", "postfix", "transpiler", "finalizer", "manipulator"];
     private static readonly HashSet<string> validTargetMethodNamePrefixes = ["targetmethod", "target_method"];
-    private static readonly string generatedCodeAttribute = $@"[global::System.CodeDom.Compiler.GeneratedCode(""{typeof(HarmonyRegisterPatchGenerator).FullName}"", ""{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}"")]";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -68,16 +69,13 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
         // Append new code to the compilation.
         context.AddSource($"{patchInfo.NameSpace}.{patchInfo.TypeName}.g.cs",
                           $$"""
-                            #pragma warning disable
-                            using System;
-                            using HarmonyLib;
-
+                            {{Constants.GeneratedFileHeader}}
                             namespace {{patchInfo.NameSpace}};
 
                             partial class {{patchInfo.TypeName}}
                             {
-                                {{generatedCodeAttribute}}
-                                public override void Patch(Harmony harmony)
+                                {{Constants.GeneratedCodeAttribute}}
+                                public override void Patch(HarmonyLib.Harmony harmony)
                                 {
                                     {{patchImpl}}
                                 }
@@ -182,33 +180,8 @@ internal sealed class HarmonyRegisterPatchGenerator : IIncrementalGenerator
     /// <param name="TypeName">Name of the patch type.</param>
     /// <param name="Functions">Harmony patch functions declared in the patch.</param>
     /// <param name="Fields">Fields that specify a method info to be patched.</param>
-    private record NitroxPatchInfo(string NameSpace, string TypeName, ImmutableArray<NitroxPatchInfo.Function> Functions, ImmutableArray<NitroxPatchInfo.Field> Fields)
+    private record NitroxPatchInfo(string NameSpace, string TypeName, EquatableArray<NitroxPatchInfo.Function> Functions, EquatableArray<NitroxPatchInfo.Field> Fields)
     {
-        public virtual bool Equals(NitroxPatchInfo? other)
-        {
-            if (other is null)
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-            return NameSpace == other.NameSpace && TypeName == other.TypeName && Functions.SequenceEqual(other.Functions) && Fields.SequenceEqual(other.Fields);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hashCode = NameSpace.GetHashCode();
-                hashCode = hashCode * 397 ^ TypeName.GetHashCode();
-                hashCode = hashCode * 397 ^ Functions.GetHashCode();
-                hashCode = hashCode * 397 ^ Fields.GetHashCode();
-                return hashCode;
-            }
-        }
-
         public record Field(string Name, string TargetMethodTypeName);
 
         public record Function(string Name, string HarmonyPatchTypeName);

@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Nitrox.Analyzers.Generators;
+using Nitrox.Analyzers.Models;
+using Nitrox.Analyzers.Test.Core;
 
 namespace Nitrox.Analyzers.Test;
 
@@ -35,31 +35,20 @@ namespace TestNamespace
 }
 """;
         string expectedGeneratedCode = $$"""
-#pragma warning disable
-using System;
-using HarmonyLib;
-
+{{Constants.GeneratedFileHeader}}
 namespace TestNamespace;
 
 partial class SomePatch
 {
-    [global::System.CodeDom.Compiler.GeneratedCode("Nitrox.Analyzers.Generators.HarmonyRegisterPatchGenerator", "{{typeof(HarmonyRegisterPatchGenerator).Assembly.GetName().Version}}")]
-    public override void Patch(Harmony harmony)
+    {{Constants.GeneratedCodeAttribute}}
+    public override void Patch(HarmonyLib.Harmony harmony)
     {
         PatchMultiple(harmony, TARGET_METHOD, prefix: ((Delegate)Prefix).Method);
     }
 }
 """;
 
-
-        var driver = CSharpGeneratorDriver.Create(new HarmonyRegisterPatchGenerator());
-        var compilation = CSharpCompilation.Create("NitroxPatcher",
-                                                   [CSharpSyntaxTree.ParseText(patchClassText)],
-                                                   [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
-
-        GeneratorDriverRunResult result = driver.RunGenerators(compilation).GetRunResult();
-        SyntaxTree generatedFileSyntax = result.GeneratedTrees.Single(t => t.FilePath.EndsWith("SomePatch.g.cs"));
-
+        SyntaxTree generatedFileSyntax = TestHelper.RunGenerator<HarmonyRegisterPatchGenerator>(patchClassText, "SomePatch.g.cs");
         generatedFileSyntax.GetText().ToString().Should().Be(expectedGeneratedCode);
     }
 }

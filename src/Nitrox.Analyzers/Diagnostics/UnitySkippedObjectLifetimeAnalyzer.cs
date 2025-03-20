@@ -18,7 +18,7 @@ public sealed class UnitySkippedObjectLifetimeAnalyzer : DiagnosticAnalyzer
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
     /// </summary>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.ConditionalAccessRule, Rules.IsNullRule, Rules.NullCoalesceRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rules.ConditionalAccessRule, Rules.IsNullRule, Rules.NullCoalesceRule];
 
     /// <summary>
     ///     Initializes the analyzer by registering on symbol occurrence in the targeted code.

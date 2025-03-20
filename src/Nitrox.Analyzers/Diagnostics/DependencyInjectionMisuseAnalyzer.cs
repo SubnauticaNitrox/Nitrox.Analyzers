@@ -15,7 +15,7 @@ namespace Nitrox.Analyzers.Diagnostics;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.MisusedDependencyInjection);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rules.MisusedDependencyInjection];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -42,7 +42,7 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        TypeDeclarationSyntax? declaringType = memberAccess.FindInParents<TypeDeclarationSyntax>();
+        TypeDeclarationSyntax? declaringType = memberAccess.FindInAncestors<TypeDeclarationSyntax>();
         if (declaringType == null)
         {
             return;
@@ -71,7 +71,7 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
     {
         public static readonly DiagnosticDescriptor MisusedDependencyInjection = new("DIMA001",
                                                                                      "Dependency Injection container is used directly",
-                                                                                     "The DI container should not be used directly in type '{0}' as the requested service can be supplied via a constructor parameter.",
+                                                                                     "The DI container should not be used directly in type '{0}' as the requested service can be supplied via a constructor parameter",
                                                                                      "Usage",
                                                                                      DiagnosticSeverity.Warning,
                                                                                      true);

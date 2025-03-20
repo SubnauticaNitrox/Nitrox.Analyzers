@@ -14,7 +14,7 @@ namespace Nitrox.Analyzers.Diagnostics;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class EnumeratorUsageAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.UnusedEnumerator);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rules.UnusedEnumerator];
 
     public override void Initialize(AnalysisContext context)
     {

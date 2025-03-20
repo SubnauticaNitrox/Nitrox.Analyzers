@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Nitrox.Analyzers.Models;
 
 namespace Nitrox.Analyzers.Extensions;
 
@@ -25,5 +26,14 @@ internal static class SymbolExtensions
             }
         }
         return false;
+    }
+
+    public static string GetGeneratorSafeNamespace(this IMethodSymbol method)
+    {
+        if (method.ContainingNamespace == null || method.ContainingNamespace.IsGlobalNamespace)
+        {
+            return Constants.GeneratorNamespace;
+        }
+        return method.ContainingNamespace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)["global::".Length..];
     }
 }

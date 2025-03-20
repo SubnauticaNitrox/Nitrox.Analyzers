@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Nitrox.Analyzers.Diagnostics;
+using Nitrox.Analyzers.Models;
 
 namespace Nitrox.Analyzers.Generators;
 
@@ -24,8 +25,7 @@ internal sealed class UnitySkippedObjectLifetimeHelperGenerator : IIncrementalGe
 
         sourceProductionContext.AddSource($"{UnitySkippedObjectLifetimeAnalyzer.FixFunctionName}Extension.g.cs",
                                           $$"""
-                                            using System;
-
+                                            {{Constants.GeneratedFileHeader}}
                                             internal static class {{UnitySkippedObjectLifetimeAnalyzer.FixFunctionName}}Extension
                                             {
                                                 /// <summary>
@@ -34,6 +34,7 @@ internal sealed class UnitySkippedObjectLifetimeHelperGenerator : IIncrementalGe
                                                 /// <param name="obj">Unity <see cref="UnityEngine.Object" /> to check if alive.</param>
                                                 /// <typeparam name="TObject">Type of Unity object that can be marked as either alive or dead.</typeparam>
                                                 /// <returns>The <see cref="UnityEngine.Object" /> if alive or null if dead.</returns>
+                                                {{Constants.GeneratedCodeAttribute}}
                                                 public static TObject {{UnitySkippedObjectLifetimeAnalyzer.FixFunctionName}}<TObject>(this TObject obj) where TObject : UnityEngine.Object
                                                 {
                                                     if (obj)

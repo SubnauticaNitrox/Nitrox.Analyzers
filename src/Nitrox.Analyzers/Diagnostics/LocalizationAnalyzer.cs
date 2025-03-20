@@ -27,7 +27,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
     /// <summary>
     ///     Gets the list of rules of supported diagnostics.
     /// </summary>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.InvalidLocalizationKeyRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rules.InvalidLocalizationKeyRule];
 
     /// <summary>
     ///     Initializes the analyzer by registering on symbol occurrence in the targeted code.
@@ -152,7 +152,7 @@ public sealed class LocalizationAnalyzer : DiagnosticAnalyzer
                                                                                      "Usage",
                                                                                      DiagnosticSeverity.Warning,
                                                                                      true,
-                                                                                     "Tests that requested localization keys exist in the English localization file");
+                                                                                     "Tests that requested localization keys exist in the English localization file.");
     }
 
     /// <summary>

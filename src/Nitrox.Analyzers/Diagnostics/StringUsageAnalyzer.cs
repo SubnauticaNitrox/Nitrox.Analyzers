@@ -9,7 +9,7 @@ namespace Nitrox.Analyzers.Diagnostics;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rules.PreferInterpolatedStringRule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rules.PreferInterpolatedStringRule];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -77,6 +77,6 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
                                                                                         "Usage",
                                                                                         DiagnosticSeverity.Warning,
                                                                                         true,
-                                                                                        "Prefer interpolated string over concatenating strings");
+                                                                                        "Prefer interpolated string over concatenating strings.");
     }
 }

@@ -1,0 +1,8 @@
+<Project InitialTargets="_Nitrox_Analyzers_Interceptors">
+    <Target Name="_Nitrox_Analyzers_Interceptors">
+        <PropertyGroup>
+            <InterceptorsNamespaces>$(InterceptorsNamespaces);Nitrox.Analyzers.Interceptors</InterceptorsNamespaces>
+            <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Nitrox.Analyzers.Interceptors</InterceptorsPreviewNamespaces>
+        </PropertyGroup>
+    </Target>
+</Project>
