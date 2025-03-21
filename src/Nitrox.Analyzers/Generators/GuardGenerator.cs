@@ -131,7 +131,7 @@ internal sealed class GuardGenerator : IIncrementalGenerator
                 writer.WriteLine(')');
                 writer.WriteLine('{');
                 writer.Indent++;
-                writer.WriteLine($"if (!Guardian.IsTrusted({call.Parameters.First(p => p.Name.IndexOf("path", StringComparison.OrdinalIgnoreCase) >= 0).Name}))");
+                writer.WriteLine($"if (!Guardian.IsTrustedDirectory({call.Parameters.First(p => p.Name.IndexOf("path", StringComparison.OrdinalIgnoreCase) >= 0).Name}))");
                 writer.WriteLine('{');
                 writer.Indent++;
                 writer.WriteLine("Environment.Exit(0);");

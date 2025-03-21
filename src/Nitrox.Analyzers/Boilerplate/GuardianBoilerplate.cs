@@ -10,7 +10,7 @@ internal static class GuardianBoilerplate
                                        [global::System.Runtime.InteropServices.DllImport("Wintrust.dll", PreserveSig = true, SetLastError = false)]
                                        private static extern uint WinVerifyTrust(IntPtr hWnd, IntPtr pgActionId, IntPtr pWinTrustData);
                                    
-                                       internal static bool NeedsGuardian(string path)
+                                       internal static bool IsTrustedDirectory(string path)
                                        {
                                            if (string.IsNullOrWhiteSpace(path))
                                            {
@@ -23,13 +23,13 @@ internal static class GuardianBoilerplate
                                            }
                                    
                                            string subdirDll = global::System.IO.Path.Combine(path, dataFolder, "Plugins", "x86_64", "steam_api64.dll");
-                                           if (global::System.IO.File.Exists(subdirDll) && !IsTrusted(subdirDll))
+                                           if (global::System.IO.File.Exists(subdirDll) && !IsTrustedFile(subdirDll))
                                            {
                                                return true;
                                            }
                                            // Dlls might be in root if cracked game (to override DLLs in sub directories).
                                            string rootDll = global::System.IO.Path.Combine(path, "steam_api64.dll");
-                                           if (global::System.IO.File.Exists(rootDll) && !IsTrusted(rootDll))
+                                           if (global::System.IO.File.Exists(rootDll) && !IsTrustedFile(rootDll))
                                            {
                                                return true;
                                            }
@@ -37,7 +37,7 @@ internal static class GuardianBoilerplate
                                            return false;
                                        }
                                    
-                                       internal static bool IsTrusted(string fileName)
+                                       internal static bool IsTrustedFile(string fileName)
                                        {
                                            if (!global::System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(global::System.Runtime.InteropServices.OSPlatform.Windows))
                                            {
