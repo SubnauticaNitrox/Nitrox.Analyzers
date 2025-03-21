@@ -14,7 +14,7 @@ internal static class GuardianBoilerplate
                                        {
                                            if (string.IsNullOrWhiteSpace(path))
                                            {
-                                               return false;
+                                               return true;
                                            }
                                            string dataFolder = "Subnautica_Data";
                                            if (global::System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(global::System.Runtime.InteropServices.OSPlatform.OSX))
@@ -25,16 +25,16 @@ internal static class GuardianBoilerplate
                                            string subdirDll = global::System.IO.Path.Combine(path, dataFolder, "Plugins", "x86_64", "steam_api64.dll");
                                            if (global::System.IO.File.Exists(subdirDll) && !IsTrustedFile(subdirDll))
                                            {
-                                               return true;
+                                               return false;
                                            }
                                            // Dlls might be in root if cracked game (to override DLLs in sub directories).
                                            string rootDll = global::System.IO.Path.Combine(path, "steam_api64.dll");
                                            if (global::System.IO.File.Exists(rootDll) && !IsTrustedFile(rootDll))
                                            {
-                                               return true;
+                                               return false;
                                            }
                                    
-                                           return false;
+                                           return true;
                                        }
                                    
                                        internal static bool IsTrustedFile(string fileName)
