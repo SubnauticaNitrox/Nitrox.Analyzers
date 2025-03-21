@@ -16,13 +16,13 @@ internal static class Program
 {
     public static void Main(string[] args)
     {
-        new SomeClass().GetPlatformByGameDir(""bla"");
+        NitroxEntryPatch.Apply(""something"");
     }
 }
 
-public class SomeClass
+public static class NitroxEntryPatch
 {
-    public async System.Threading.Tasks.Task GetPlatformByGameDir(string path)
+    public static async System.Threading.Tasks.Task Apply(string path)
     {
         // Do stuff
     }

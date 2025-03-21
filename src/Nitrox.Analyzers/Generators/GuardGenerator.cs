@@ -34,33 +34,27 @@ internal sealed class GuardGenerator : IIncrementalGenerator
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
     {
-        if (GetMethodNameIdentifier(node) is not { } identifierName)
-        {
-            return false;
-        }
-        if (identifierName.IndexOf("GetPlatformByGameDir", StringComparison.OrdinalIgnoreCase) == -1)
-        {
-            return false;
-        }
-        return true;
+        return IsStaticCall(node, "NitroxEntryPatch", "Apply");
 
-        static string? GetMethodNameIdentifier(SyntaxNode node)
+        static bool IsStaticCall(SyntaxNode node, string staticTypeName, string functionName)
         {
-            while (true)
+            if (node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax member })
             {
-                switch (node)
-                {
-                    case InvocationExpressionSyntax { Expression: IdentifierNameSyntax identifier }:
-                        return identifier.Identifier.ValueText;
-                    case InvocationExpressionSyntax invocation:
-                        node = invocation.Expression;
-                        break;
-                    case MemberAccessExpressionSyntax memberAccess:
-                        return memberAccess.Name.Identifier.ValueText;
-                    default:
-                        return null;
-                }
+                return false;
             }
+            if (!member.Name.Identifier.ValueText.Equals(functionName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (member.Expression is not IdentifierNameSyntax typeIdenfitier)
+            {
+                return false;
+            }
+            if (!typeIdenfitier.Identifier.ValueText.Equals(staticTypeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            return true;
         }
     }
 

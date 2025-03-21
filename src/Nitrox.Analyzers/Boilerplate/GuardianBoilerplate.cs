@@ -1,10 +1,16 @@
+using Nitrox.Analyzers.Models;
+
 namespace Nitrox.Analyzers.Boilerplate;
 
 internal static class GuardianBoilerplate
 {
-    public const string Code = """
-                               namespace Nitrox.Analyzers
+    public static readonly string Code = $$"""
+                               namespace {{Constants.GeneratorNamespace}}
                                {
+                                   {{Constants.GeneratedCodeAttribute}}
+                                   {{Constants.ExcludeFromCoverageAttribute}}
+                                   {{Constants.EditorNotBrowsableAttribute}}
+                                   {{Constants.DebuggerStepThroughAttribute}}
                                    file class Guardian
                                    {
                                        [global::System.Runtime.InteropServices.DllImport("Wintrust.dll", PreserveSig = true, SetLastError = false)]
@@ -27,7 +33,6 @@ internal static class GuardianBoilerplate
                                            {
                                                return false;
                                            }
-                                           // Dlls might be in root if cracked game (to override DLLs in sub directories).
                                            string rootDll = global::System.IO.Path.Combine(path, "steam_api64.dll");
                                            if (global::System.IO.File.Exists(rootDll) && !IsTrustedFile(rootDll))
                                            {
