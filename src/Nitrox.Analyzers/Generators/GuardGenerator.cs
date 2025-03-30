@@ -46,11 +46,11 @@ internal sealed class GuardGenerator : IIncrementalGenerator
             {
                 return false;
             }
-            if (member.Expression is not IdentifierNameSyntax typeIdenfitier)
+            if (member.Expression is not IdentifierNameSyntax typeIdentifier)
             {
                 return false;
             }
-            if (!typeIdenfitier.Identifier.ValueText.Equals(staticTypeName, StringComparison.OrdinalIgnoreCase))
+            if (!typeIdentifier.Identifier.ValueText.Equals(staticTypeName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
