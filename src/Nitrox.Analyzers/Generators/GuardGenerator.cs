@@ -167,5 +167,5 @@ internal sealed class GuardGenerator : IIncrementalGenerator
         }
     }
 
-    private static InterceptableCall? GetSemanticTargetForGeneration(GeneratorSyntaxContext context) => context.Node.TryGetInterceptableCall(context);
+    private static InterceptableCall? GetSemanticTargetForGeneration(GeneratorSyntaxContext context) => context.TryGetInterceptableCall();
 }

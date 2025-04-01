@@ -33,8 +33,7 @@ public sealed class DependencyInjectionMisuseAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeDependencyInjectionMisuse(SyntaxNodeAnalysisContext context, params INamedTypeSymbol?[] allowedTypesUsingDependencyInjection)
     {
-        MemberAccessExpressionSyntax memberAccess = (MemberAccessExpressionSyntax)context.Node;
-        if (memberAccess.Expression is not IdentifierNameSyntax accessedIdentifier)
+        if (context.Node is not MemberAccessExpressionSyntax { Expression: IdentifierNameSyntax accessedIdentifier } memberAccess)
         {
             return;
         }

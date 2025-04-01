@@ -97,6 +97,7 @@ internal static class SyntaxExtensions
     {
         return node switch
         {
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
             FieldDeclarationSyntax field => field.Declaration.Variables.FirstOrDefault()?.Identifier.ValueText ?? "",
             TypeDeclarationSyntax type => type.Identifier.ValueText,
             IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
@@ -113,13 +114,13 @@ internal static class SyntaxExtensions
         return symbol.Parameters.Select((p, index) => new MethodParameterInfo(p.Name == "" ? $"p{index}" : p.Name, p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))).ToImmutableArray();
     }
 
-    public static InterceptableCall? TryGetInterceptableCall(this SyntaxNode node, GeneratorSyntaxContext context)
+    public static InterceptableCall? TryGetInterceptableCall(this GeneratorSyntaxContext context)
     {
-        if (node is not InvocationExpressionSyntax invocation)
+        if (context.Node is not InvocationExpressionSyntax invocation)
         {
             return null;
         }
-        if (node.TryGetCallLocation(context) is not { } callLocation)
+        if (context.Node.TryGetCallLocation(context) is not { } callLocation)
         {
             return null;
         }

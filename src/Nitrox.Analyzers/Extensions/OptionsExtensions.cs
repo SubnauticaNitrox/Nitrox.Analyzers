@@ -1,20 +1,17 @@
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Nitrox.Analyzers.Configuration;
 
-namespace Nitrox.Analyzers.Configuration;
+namespace Nitrox.Analyzers.Extensions;
 
-/// <summary>
-///     Keep in sync with Nitrox.Analyzers.props
-/// </summary>
-internal static class GeneratorOptions
+internal static class OptionsExtensions
 {
     private const string CommonPrefix = $"build_property.{nameof(Nitrox)}{nameof(Analyzers)}";
-    private const string GenerateInterceptorAttributeKey = $"{CommonPrefix}_{nameof(SourceGeneratorConfiguration.GenerateInterceptorAttribute)}";
 
-    public static IncrementalValueProvider<SourceGeneratorConfiguration> Provide(IncrementalGeneratorInitializationContext context) =>
+    public static IncrementalValueProvider<SourceGeneratorConfiguration> GetOptionsProvider(this IncrementalGeneratorInitializationContext context) =>
         context.AnalyzerConfigOptionsProvider.Select((options, _) => new SourceGeneratorConfiguration(
-                                                         GetValue(options.GlobalOptions, GenerateInterceptorAttributeKey)
+                                                         GetValue(options.GlobalOptions, $"{CommonPrefix}_{nameof(SourceGeneratorConfiguration.GenerateInterceptorAttribute)}")
                                                      ));
 
     private static bool GetValue(AnalyzerConfigOptions options, string key, bool defaultValue = true) =>

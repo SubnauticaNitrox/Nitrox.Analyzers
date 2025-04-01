@@ -21,6 +21,20 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeAddNode(SyntaxNodeAnalysisContext context)
     {
+        BinaryExpressionSyntax expression = (BinaryExpressionSyntax)context.Node;
+        // Deduplicate warnings. Only left most '+' of the expression should be handled here.
+        if (!IsLeftMostNodeInConcat(expression.Parent))
+        {
+            return;
+        }
+        // Test if this should be interpolated.
+        if (!IsPartOfStringConcat(expression.Left) && !IsPartOfStringConcat(expression.Right))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(Diagnostic.Create(Rules.PreferInterpolatedStringRule, expression.GetLocation(), expression));
+
         bool IsPartOfStringConcat(SyntaxNode node)
         {
             switch (node)
@@ -50,20 +64,6 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
                 _ => true
             };
         }
-
-        BinaryExpressionSyntax expression = (BinaryExpressionSyntax)context.Node;
-        // Deduplicate warnings. Only left most '+' of the expression should be handled here.
-        if (!IsLeftMostNodeInConcat(expression.Parent))
-        {
-            return;
-        }
-        // Test if this should be interpolated.
-        if (!IsPartOfStringConcat(expression.Left) && !IsPartOfStringConcat(expression.Right))
-        {
-            return;
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(Rules.PreferInterpolatedStringRule, expression.GetLocation(), expression));
     }
 
     public static class Rules
@@ -72,11 +72,11 @@ public sealed class StringUsageAnalyzer : DiagnosticAnalyzer
         public const string PreferInterpolatedStringDiagnosticId = $"{AnalyzerId}001";
 
         internal static readonly DiagnosticDescriptor PreferInterpolatedStringRule = new(PreferInterpolatedStringDiagnosticId,
-                                                                                        "Prefer interpolated string over string concat",
-                                                                                        "String concat can be turned into interpolated string",
-                                                                                        "Usage",
-                                                                                        DiagnosticSeverity.Warning,
-                                                                                        true,
-                                                                                        "Prefer interpolated string over concatenating strings.");
+                                                                                         "Prefer interpolated string over string concat",
+                                                                                         "String concat can be turned into interpolated string",
+                                                                                         "Usage",
+                                                                                         DiagnosticSeverity.Warning,
+                                                                                         true,
+                                                                                         "Prefer interpolated string over concatenating strings.");
     }
 }

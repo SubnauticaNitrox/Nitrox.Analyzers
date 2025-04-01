@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Nitrox.Analyzers.Diagnostics;
 using Verify = Microsoft.CodeAnalysis.CSharp.Testing.MSTest.AnalyzerVerifier<Nitrox.Analyzers.Diagnostics.UnitySkippedObjectLifetimeAnalyzer>;
 using Rules = Nitrox.Analyzers.Diagnostics.UnitySkippedObjectLifetimeAnalyzer.Rules;
 
@@ -38,7 +39,7 @@ public class UnitySkippedObjectLifetimeAnalyzerTests
     public Task IsNull_Diagnostic()
     {
         return Verify.VerifyAnalyzerAsync(
-            """
+            $$"""
             using System;
 
             namespace UnityEngine
@@ -46,6 +47,11 @@ public class UnitySkippedObjectLifetimeAnalyzerTests
                 public class Object
                 {
                     public int Id;
+                    
+                    public bool {{UnitySkippedObjectLifetimeAnalyzer.FixFunctionName}}()
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -58,13 +64,16 @@ public class UnitySkippedObjectLifetimeAnalyzerTests
                     Console.WriteLine(obj is not null);
                     Console.WriteLine(obj is {});
                     Console.WriteLine(obj is not {});
+                    Console.WriteLine(obj is {} nonNullObj);
+                    Console.WriteLine(obj.{{UnitySkippedObjectLifetimeAnalyzer.FixFunctionName}}() is {} nonNullObj2);
                 }
             }
             """,
-            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(17, 27, 17, 42).WithArguments("Object"),
-            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(16, 27, 16, 38).WithArguments("Object"),
-            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(18, 27, 18, 36).WithArguments("Object"),
-            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(19, 27, 19, 40).WithArguments("Object")
+            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(22, 27, 22, 42).WithArguments("Object"),
+            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(21, 27, 21, 38).WithArguments("Object"),
+            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(23, 27, 23, 36).WithArguments("Object"),
+            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(24, 27, 24, 40).WithArguments("Object"),
+            Verify.Diagnostic(Rules.IsNullDiagnosticId).WithSpan(25, 27, 25, 47).WithArguments("Object")
         );
     }
 
