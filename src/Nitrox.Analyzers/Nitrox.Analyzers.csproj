@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.0.12</Version>
+        <Version>1.0.13</Version>
         <!-- Analyzers MUST target netstandard2.0, do not update unless Microsoft (MSDN) says it's possible. -->
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
